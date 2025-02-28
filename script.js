@@ -1,10 +1,91 @@
-// Initialize variables and load data from local storage
+// Trigger file input dialog for import
+function triggerImportDialog() {
+    document.getElementById('importFileInput').click();
+}
+
+// Import data from a JSON file
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            // Parse the JSON data
+            const importedData = JSON.parse(e.target.result);
+            
+            // Validate the data structure
+            if (!importedData.billData) {
+                throw new Error('Invalid data format: Missing bill data');
+            }
+            
+            // Confirm import
+            if (confirm('This will replace your current data. Are you sure you want to proceed?')) {
+                // Store the imported data in localStorage
+                if (importedData.payCycleStart) {
+                    localStorage.setItem('payCycleStart', importedData.payCycleStart);
+                }
+                
+                if (importedData.payCycleFrequency) {
+                    localStorage.setItem('payCycleFrequency', importedData.payCycleFrequency);
+                }
+                
+                if (importedData.payCycleIncome) {
+                    localStorage.setItem('payCycleIncome', importedData.payCycleIncome);
+                }
+                
+                if (importedData.billData) {
+                    localStorage.setItem('billData', importedData.billData);
+                }
+                
+                // Reload the page to apply changes
+                showSnackbar('Data imported successfully! Reloading...');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            }
+        } catch (error) {
+            alert('Error importing data: ' + error.message);
+            console.error('Import error:', error);
+        }
+    };
+    
+    reader.readAsText(file);
+    
+    // Clear the file input so the same file can be selected again
+    event.target.value = '';
+}// Initialize variables and load data from local storage
 let masterBills = [];
 let payCycles = [];
 let payCycleStart = new Date();
 let payCycleFrequency = 'Fortnightly';
 let payCycleIncome = 0;
 let customFrequencySettings = null;
+
+// Theme handling
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    
+    // Update toggle button text and icon
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+    
+    if (theme === 'dark') {
+        themeIcon.textContent = 'light_mode';
+        themeText.textContent = 'Light Mode';
+    } else {
+        themeIcon.textContent = 'dark_mode';
+        themeText.textContent = 'Dark Mode';
+    }
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+}
 
 // Helper function to check if a date is the last day of its month
 function isLastDayOfMonth(date) {
@@ -138,7 +219,120 @@ function setupCustomFrequencyModal() {
     });
 }
 
+// Update the toggle button to match the blue style in the screenshots
+function updateToggleButton(button, isHidden) {
+    const iconElem = button.querySelector('.material-icons-round');
+    const textElem = button.querySelector('.btn-text');
+    
+    if (isHidden) {
+        button.style.backgroundColor = '#e1f1fd'; // Light blue background
+        button.style.color = '#0066cc'; // Blue text
+        iconElem.textContent = 'visibility';
+        textElem.textContent = 'Show List';
+    } else {
+        button.style.backgroundColor = '#e1f1fd'; // Light blue background 
+        button.style.color = '#0066cc'; // Blue text
+        iconElem.textContent = 'visibility_off';
+        textElem.textContent = 'Hide List';
+    }
+}
+
+// Update the toggle all cycles button to match the blue style in the screenshots
+function updateToggleAllButton(button, isCollapsed) {
+    const iconElem = button.querySelector('.material-icons-round');
+    const textElem = button.querySelector('.btn-text');
+    
+    button.style.backgroundColor = '#e1f1fd'; // Light blue background
+    button.style.color = '#0066cc'; // Blue text
+    
+    if (isCollapsed) {
+        iconElem.textContent = 'expand_more';
+        textElem.textContent = 'Expand All';
+    } else {
+        iconElem.textContent = 'expand_less';
+        textElem.textContent = 'Collapse All';
+    }
+}
+
+// Fix balance colors to ensure they're green/red
+function fixBalanceColors() {
+    // Fix the balance colors in the financial info sections
+    document.querySelectorAll('.financial-info p.positive-balance span').forEach(elem => {
+        elem.style.color = 'green';
+    });
+    
+    document.querySelectorAll('.financial-info p.negative-balance span').forEach(elem => {
+        elem.style.color = 'red';
+    });
+}
+
+// Show a temporary snackbar message
+function showSnackbar(message) {
+    // Create snackbar if it doesn't exist
+    let snackbar = document.getElementById('snackbar');
+    if (!snackbar) {
+        snackbar = document.createElement('div');
+        snackbar.id = 'snackbar';
+        document.body.appendChild(snackbar);
+        
+        // Add styles if not in the CSS
+        if (!document.querySelector('style#snackbar-styles')) {
+            const style = document.createElement('style');
+            style.id = 'snackbar-styles';
+            style.textContent = `
+                #snackbar {
+                    visibility: hidden;
+                    min-width: 250px;
+                    background-color: var(--md-secondary);
+                    color: var(--md-on-secondary);
+                    text-align: center;
+                    border-radius: var(--md-shape-small);
+                    padding: 16px;
+                    position: fixed;
+                    z-index: 1001;
+                    left: 50%;
+                    bottom: 30px;
+                    transform: translateX(-50%);
+                    box-shadow: var(--md-elevation-level3);
+                }
+                
+                #snackbar.show {
+                    visibility: visible;
+                    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+                }
+                
+                @keyframes fadein {
+                    from {bottom: 0; opacity: 0;}
+                    to {bottom: 30px; opacity: 1;}
+                }
+                
+                @keyframes fadeout {
+                    from {bottom: 30px; opacity: 1;}
+                    to {bottom: 0; opacity: 0;}
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+    
+    // Set message and show
+    snackbar.textContent = message;
+    snackbar.className = 'show';
+    
+    // Hide after 3 seconds
+    setTimeout(function() {
+        snackbar.className = snackbar.className.replace('show', '');
+    }, 3000);
+}
+
 window.onload = function() {
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+    
+    // Set up theme toggle
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    
     // Load saved data
     if (localStorage.getItem('payCycleStart')) {
         payCycleStart = new Date(localStorage.getItem('payCycleStart'));
@@ -161,26 +355,31 @@ window.onload = function() {
     }
     
     // Set up toggle buttons
-    document.getElementById('toggleMasterList').addEventListener('click', function() {
+    const toggleMasterListBtn = document.getElementById('toggleMasterList');
+    toggleMasterListBtn.addEventListener('click', function() {
         const container = document.getElementById('masterListContainer');
-        container.style.display = container.style.display === 'none' ? 'block' : 'none';
-        this.textContent = container.style.display === 'none' ? 'Show List' : 'Hide List';
+        const isHidden = container.style.display === 'none';
+        container.style.display = isHidden ? 'block' : 'none';
+        updateToggleButton(this, !isHidden);
     });
     
-    document.getElementById('toggleAllCycles').addEventListener('click', function() {
+    const toggleAllCyclesBtn = document.getElementById('toggleAllCycles');
+    toggleAllCyclesBtn.addEventListener('click', function() {
         const allContents = document.querySelectorAll('.cycle-content');
         const allButtons = document.querySelectorAll('.cycle-toggle');
-        const allExpanded = this.textContent === 'Collapse All';
+        const allExpanded = this.querySelector('.btn-text').textContent === 'Collapse All';
         
         allContents.forEach(content => {
             content.classList.toggle('hidden', allExpanded);
         });
         
         allButtons.forEach(button => {
+            const iconElem = button.querySelector('.material-icons-round');
+            iconElem.textContent = allExpanded ? 'expand_more' : 'expand_less';
             button.classList.toggle('collapsed', !allExpanded);
         });
         
-        this.textContent = allExpanded ? 'Expand All' : 'Collapse All';
+        updateToggleAllButton(this, allExpanded);
     });
     
     // Set up file input listener
@@ -196,8 +395,58 @@ window.onload = function() {
         }
     });
     
+    // Style UI elements to match screenshots
+    const exportBtn = document.querySelector('.data-btn:not(.import-btn)');
+    const importBtn = document.querySelector('.import-btn');
+    
+    if (exportBtn) {
+        exportBtn.style.backgroundColor = '#f7e8ff'; // Light purple
+        exportBtn.style.color = '#6200ee'; // Purple
+    }
+    
+    if (importBtn) {
+        importBtn.style.backgroundColor = '#e1f1fd'; // Light blue
+        importBtn.style.color = '#0066cc'; // Blue
+    }
+    
+    // Style the Add Bill button to match the screenshot
+    const addBillBtn = document.querySelector('.add-bill-btn');
+    if (addBillBtn) {
+        addBillBtn.style.backgroundColor = '#006eb8'; // Blue from screenshot
+    }
+    
+    // Apply initial styles to control buttons
+    if (toggleMasterListBtn) {
+        toggleMasterListBtn.style.backgroundColor = '#e1f1fd'; // Light blue background
+        toggleMasterListBtn.style.color = '#0066cc'; // Blue text
+        
+        // Set initial icon and text
+        const iconElem = toggleMasterListBtn.querySelector('.material-icons-round');
+        const textElem = toggleMasterListBtn.querySelector('.btn-text');
+        if (iconElem && textElem) {
+            iconElem.textContent = 'visibility_off';
+            textElem.textContent = 'Hide List';
+        }
+    }
+    
+    if (toggleAllCyclesBtn) {
+        toggleAllCyclesBtn.style.backgroundColor = '#e1f1fd'; // Light blue background
+        toggleAllCyclesBtn.style.color = '#0066cc'; // Blue text
+        
+        // Set initial icon and text
+        const iconElem = toggleAllCyclesBtn.querySelector('.material-icons-round');
+        const textElem = toggleAllCyclesBtn.querySelector('.btn-text');
+        if (iconElem && textElem) {
+            iconElem.textContent = 'expand_less';
+            textElem.textContent = 'Collapse All';
+        }
+    }
+    
     updateMasterList();
     generatePayCycles();
+    
+    // Fix balance colors after a short delay to ensure DOM is updated
+    setTimeout(fixBalanceColors, 100);
 };
 
 // Add a new bill to the master list
@@ -226,6 +475,9 @@ function addBill() {
         
         updateMasterList();
         generatePayCycles();
+        
+        // Show success feedback
+        showSnackbar("Bill added successfully!");
     } else {
         alert("Please fill in all fields");
     }
@@ -250,18 +502,28 @@ function updateMasterList() {
             }
         }
         
+        const billDate = new Date(bill.date + 'T12:00:00Z');
+        
         li.innerHTML = `
-            <span class="bill-details">${bill.name} - ${new Date(bill.date + 'T12:00:00Z').toLocaleDateString()} (${frequencyDisplay})</span>
+            <span class="bill-details">
+                <strong>${bill.name}</strong>
+                <div class="bill-subtext">${billDate.toLocaleDateString()} (${frequencyDisplay})</div>
+            </span>
             <span class="bill-amount">$${bill.amount.toFixed(2)}</span>
         `;
         
         let deleteButton = document.createElement('button');
-        deleteButton.textContent = 'Delete';
+        deleteButton.className = 'delete-btn';
+        deleteButton.innerHTML = '<span class="material-icons-round">delete</span>';
+        deleteButton.setAttribute('aria-label', 'Delete bill');
         deleteButton.onclick = function() {
-            masterBills.splice(index, 1);
-            localStorage.setItem('billData', JSON.stringify(masterBills));
-            updateMasterList();
-            generatePayCycles();
+            if (confirm(`Are you sure you want to delete "${bill.name}"?`)) {
+                masterBills.splice(index, 1);
+                localStorage.setItem('billData', JSON.stringify(masterBills));
+                updateMasterList();
+                generatePayCycles();
+                showSnackbar("Bill deleted");
+            }
         };
         
         li.appendChild(deleteButton);
@@ -283,6 +545,7 @@ function setPayCycle() {
         localStorage.setItem('payCycleFrequency', payCycleFrequency);
         localStorage.setItem('payCycleIncome', payCycleIncome.toString());
         generatePayCycles();
+        showSnackbar("Pay cycle updated!");
     } else {
         alert("Please select a start date and enter valid income");
     }
@@ -337,7 +600,7 @@ function generatePayCycles() {
                         checkDate.setFullYear(checkDate.getFullYear() + 1);
                         cycleCount++;
                     } else if (bill.frequency === '6-Monthly') {
-                        // Add 6 months - use addOneMonth twice
+                        // Add 6 months - use addOneMonth 6 times
                         for (let i = 0; i < 6; i++) {
                             checkDate = addOneMonth(checkDate);
                         }
@@ -446,20 +709,29 @@ function updatePayCycles() {
         let cycleHeader = document.createElement("div");
         cycleHeader.className = "cycle-header";
         
+        // Format dates nicely
+        const startDate = new Date(cycle.cycleStart);
+        const endDate = new Date(cycle.cycleEnd);
+        const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+        const formattedStartDate = startDate.toLocaleDateString(undefined, dateOptions);
+        const formattedEndDate = endDate.toLocaleDateString(undefined, dateOptions);
+        
         // Add content to header
         let headerContent = document.createElement("div");
         headerContent.innerHTML = `
-            <h3>Pay Cycle ${index + 1} (${cycle.cycleStart} - ${cycle.cycleEnd})</h3>
+            <h3>${index + 1} (${formattedStartDate} - ${formattedEndDate})</h3>
             <div class="financial-info">
-                <p>Income: <span>${cycle.income.toFixed(2)}</span></p>
-                <p>Expenses: <span>${total.toFixed(2)}</span></p>
-                <p class="${balanceClass}">Balance: <span>${balance.toFixed(2)}</span></p>
+                <p>Income: <span>$${cycle.income.toFixed(2)}</span></p>
+                <p>Expenses: <span>$${total.toFixed(2)}</span></p>
+                <p class="${balanceClass}">Balance: <span>$${balance.toFixed(2)}</span></p>
             </div>
         `;
         
-        // Add toggle button
+        // Add toggle button with Material icon
         let toggleButton = document.createElement("button");
         toggleButton.className = "toggle-btn cycle-toggle";
+        toggleButton.innerHTML = '<span class="material-icons-round">expand_more</span>';
+        
         if (index !== 0) {
             toggleButton.classList.add("collapsed");
         }
@@ -473,7 +745,6 @@ function updatePayCycles() {
         cycleContent.className = "cycle-content";
         if (index !== 0) {
             cycleContent.classList.add("hidden"); // Only first cycle open by default
-            toggleButton.textContent = "+";
         }
         
         // Group bills by their group
@@ -490,15 +761,20 @@ function updatePayCycles() {
             let groupTotal = groupedBills[group].reduce((sum, bill) => sum + bill.amount, 0);
             
             let groupHeader = document.createElement("h4");
-            groupHeader.innerHTML = `${group} <span style="float: right;">${groupTotal.toFixed(2)}</span>`;
+            groupHeader.innerHTML = `${group} <span>$${groupTotal.toFixed(2)}</span>`;
             cycleContent.appendChild(groupHeader);
             
             let ul = document.createElement("ul");
             
             groupedBills[group].forEach(bill => {
                 let li = document.createElement("li");
+                const billDate = new Date(bill.date + 'T12:00:00Z');
+                
                 li.innerHTML = `
-                    <span class="bill-details">${bill.name} - ${new Date(bill.date + 'T12:00:00Z').toLocaleDateString()}</span>
+                    <span class="bill-details">
+                        <strong>${bill.name}</strong>
+                        <div class="bill-subtext">${billDate.toLocaleDateString()}</div>
+                    </span>
                     <span class="bill-amount">$${bill.amount.toFixed(2)}</span>
                 `;
                 ul.appendChild(li);
@@ -510,13 +786,26 @@ function updatePayCycles() {
         // Add click handler to toggle button
         toggleButton.addEventListener('click', function(e) {
             e.stopPropagation(); // Prevent header click from triggering
+            
+            const isHidden = !cycleContent.classList.contains('hidden');
             cycleContent.classList.toggle('hidden');
+            
+            // Update toggle icon
+            const iconElem = this.querySelector('.material-icons-round');
+            iconElem.textContent = isHidden ? 'expand_more' : 'expand_less';
+            
             this.classList.toggle('collapsed');
         });
         
         // Add click handler to header
         cycleHeader.addEventListener('click', function() {
+            const isHidden = !cycleContent.classList.contains('hidden');
             cycleContent.classList.toggle('hidden');
+            
+            // Update toggle icon
+            const iconElem = toggleButton.querySelector('.material-icons-round');
+            iconElem.textContent = isHidden ? 'expand_more' : 'expand_less';
+            
             toggleButton.classList.toggle('collapsed');
         });
         
@@ -527,6 +816,9 @@ function updatePayCycles() {
         // Add pay cycle to container
         cyclesDiv.appendChild(cycleContainer);
     });
+    
+    // Apply fixed colors to balance after cycles are rendered
+    fixBalanceColors();
 }
 
 // Export data to a JSON file
@@ -562,62 +854,5 @@ function exportData() {
     document.body.removeChild(a);
     URL.revokeObjectURL(a.href);
     
-    alert('Data exported successfully!');
-}
-
-// Trigger file input dialog for import
-function triggerImportDialog() {
-    document.getElementById('importFileInput').click();
-}
-
-// Import data from a JSON file
-function importData(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
-        try {
-            // Parse the JSON data
-            const importedData = JSON.parse(e.target.result);
-            
-            // Validate the data structure
-            if (!importedData.billData) {
-                throw new Error('Invalid data format: Missing bill data');
-            }
-            
-            // Confirm import
-            if (confirm('This will replace your current data. Are you sure you want to proceed?')) {
-                // Store the imported data in localStorage
-                if (importedData.payCycleStart) {
-                    localStorage.setItem('payCycleStart', importedData.payCycleStart);
-                }
-                
-                if (importedData.payCycleFrequency) {
-                    localStorage.setItem('payCycleFrequency', importedData.payCycleFrequency);
-                }
-                
-                if (importedData.payCycleIncome) {
-                    localStorage.setItem('payCycleIncome', importedData.payCycleIncome);
-                }
-                
-                if (importedData.billData) {
-                    localStorage.setItem('billData', importedData.billData);
-                }
-                
-                // Reload the page to apply changes
-                alert('Data imported successfully! The page will now reload.');
-                location.reload();
-            }
-        } catch (error) {
-            alert('Error importing data: ' + error.message);
-            console.error('Import error:', error);
-        }
-    };
-    
-    reader.readAsText(file);
-    
-    // Clear the file input so the same file can be selected again
-    event.target.value = '';
+    showSnackbar('Data exported successfully!');
 }
