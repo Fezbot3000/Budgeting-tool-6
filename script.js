@@ -140,6 +140,118 @@ function addOneMonth(date) {
     }
 }
 
+// Function to create the financial chart
+
+function createFinancialChart() {
+    // If the financialChart element doesn't exist, return
+    const chartElement = document.getElementById('financialChart');
+    if (!chartElement) return null;
+    
+    const ctx = chartElement.getContext('2d');
+    
+    // Check if payCycles is empty
+    if (!payCycles || payCycles.length === 0) {
+        return null;
+    }
+    
+    // Extract data from pay cycles
+    const labels = payCycles.map((cycle, index) => `Cycle ${index + 1}`);
+    const incomeData = payCycles.map(cycle => cycle.income);
+    const expensesData = payCycles.map(cycle => cycle.bills.reduce((sum, bill) => sum + bill.amount, 0));
+    const balanceData = payCycles.map((cycle, index) => 
+        incomeData[index] - expensesData[index]
+    );
+    
+    // Only show the first 12 cycles for better visibility
+    const displayCount = Math.min(12, labels.length);
+    
+    // Create chart
+    const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels.slice(0, displayCount),
+            datasets: [
+                {
+                    label: 'Income',
+                    data: incomeData.slice(0, displayCount),
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Expenses',
+                    data: expensesData.slice(0, displayCount),
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Balance',
+                    data: balanceData.slice(0, displayCount),
+                    type: 'line',
+                    fill: false,
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    pointBackgroundColor: function(context) {
+                        const index = context.dataIndex;
+                        const value = context.dataset.data[index];
+                        return value >= 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)';
+                    }
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Amount ($)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Pay Cycles'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Financial Overview Across Pay Cycles',
+                    font: {
+                        size: 16
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += new Intl.NumberFormat('en-US', { 
+                                    style: 'currency', 
+                                    currency: 'USD' 
+                                }).format(context.parsed.y);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    return chart;
+}
+
 // Set up the custom frequency modal
 function setupCustomFrequencyModal() {
     const modal = document.getElementById('customFrequencyModal');
@@ -447,6 +559,21 @@ window.onload = function() {
     
     // Fix balance colors after a short delay to ensure DOM is updated
     setTimeout(fixBalanceColors, 100);
+    
+    // Create financial chart after everything is loaded
+    setTimeout(() => {
+        window.financialChart = createFinancialChart();
+    }, 500);
+
+    // Update chart when theme changes
+    document.getElementById('themeToggle').addEventListener('click', function() {
+        setTimeout(() => {
+            if (window.financialChart) {
+                window.financialChart.destroy();
+            }
+            window.financialChart = createFinancialChart();
+        }, 200);
+    });
 };
 
 // Add a new bill to the master list
@@ -691,6 +818,7 @@ function generatePayCycles() {
 }
 
 // Update the displayed pay cycles
+// Update the displayed pay cycles
 function updatePayCycles() {
     let cyclesDiv = document.getElementById("payCycles");
     cyclesDiv.innerHTML = "";
@@ -819,6 +947,22 @@ function updatePayCycles() {
     
     // Apply fixed colors to balance after cycles are rendered
     fixBalanceColors();
+    
+    // Update financial chart - FIXED THE ERROR IN THIS SECTION
+    if (window.financialChart) {
+        try {
+            window.financialChart.destroy();
+        } catch (error) {
+            console.log("Chart couldn't be destroyed, creating a new one");
+        }
+    }
+    
+    // Wrap chart creation in a try-catch block
+    try {
+        window.financialChart = createFinancialChart();
+    } catch (error) {
+        console.error("Error creating chart:", error);
+    }
 }
 
 // Export data to a JSON file

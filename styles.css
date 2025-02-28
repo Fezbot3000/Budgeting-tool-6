@@ -1,3 +1,70 @@
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-top: 20px;
+    background-color: var(--md-surface);
+    padding: 16px;
+    border-radius: var(--md-shape-small);
+}
+
+/* Dark mode adjustments for the chart */
+[data-theme="dark"] .chart-container {
+    background-color: var(--md-surface-variant);
+}
+
+/* Responsive chart adjustments */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 250px;
+    }
+      .container, .pay-cycle, .cycle-header, .cycle-content, 
+  #masterListContainer, #payCycles, .financial-info {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-left: 0;
+    margin-right: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Adjust main container padding */
+  body, main {
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Make buttons more touch-friendly */
+  button, .btn, .toggle-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px;
+  }
+  
+  /* Adjust font sizes for better readability */
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.2rem; }
+  
+  /* Give more breathing room between elements */
+  .pay-cycle {
+    margin-bottom: 15px;
+  }
+  
+  /* Ensure financial info stays on one line if possible */
+  .financial-info p {
+    margin-right: 10px;
+    white-space: nowrap;
+  }
+  
+  /* Adjust chart container height */
+  .chart-container {
+    height: 300px;
+    width: 100%;
+  }
+}
+
+
 /* Material Design 3 Variables */
 :root {
     /* Light Theme Colors */
