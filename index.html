@@ -570,7 +570,7 @@
                     
                     groupedBills[group].forEach(bill => {
                         let li = document.createElement("li");
-                        li.textContent = `${bill.name} - ${bill.amount} - ${new Date(bill.date + 'T12:00:00Z').toLocaleDateString()}`;
+                        li.textContent = `${bill.name} - ${new Date(bill.date + 'T12:00:00Z').toLocaleDateString()} - ${bill.amount}`;
                         ul.appendChild(li);
                     });
                     
