@@ -4,6 +4,7 @@ let payCycles = [];
 let payCycleStart = new Date();
 let payCycleFrequency = 'Fortnightly';
 let payCycleIncome = 0;
+let customFrequencySettings = null;
 
 // Helper function to check if a date is the last day of its month
 function isLastDayOfMonth(date) {
@@ -58,6 +59,85 @@ function addOneMonth(date) {
     }
 }
 
+// Set up the custom frequency modal
+function setupCustomFrequencyModal() {
+    const modal = document.getElementById('customFrequencyModal');
+    const closeBtn = modal.querySelector('.close');
+    const cancelBtn = document.getElementById('cancelCustomFrequency');
+    const saveBtn = document.getElementById('saveCustomFrequency');
+    const frequencyUnit = document.getElementById('customFrequencyUnit');
+    const weekdaySelector = document.getElementById('weekdaySelector');
+    const weekdayButtons = document.querySelectorAll('.weekday-btn');
+    
+    // Show weekday selector when 'Week(s)' is selected
+    frequencyUnit.addEventListener('change', function() {
+        if (this.value === 'weeks') {
+            weekdaySelector.style.display = 'block';
+        } else {
+            weekdaySelector.style.display = 'none';
+        }
+    });
+    
+    // Toggle weekday button selection
+    weekdayButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.classList.toggle('selected');
+        });
+    });
+    
+    // Close the modal
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+    
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    
+    // Window click to close modal
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+    
+    // Save custom frequency
+    saveBtn.addEventListener('click', function() {
+        const value = parseInt(document.getElementById('customFrequencyValue').value) || 1;
+        const unit = document.getElementById('customFrequencyUnit').value;
+        let selectedDays = [];
+        
+        if (unit === 'weeks') {
+            document.querySelectorAll('.weekday-btn.selected').forEach(btn => {
+                selectedDays.push(parseInt(btn.dataset.day));
+            });
+            if (selectedDays.length === 0) {
+                // If no days selected, use the current day of the week
+                selectedDays.push(new Date().getDay());
+            }
+        }
+        
+        customFrequencySettings = {
+            value: value,
+            unit: unit,
+            days: selectedDays
+        };
+        
+        // Set a descriptive text in the frequency dropdown
+        const frequencyDropdown = document.getElementById('billFrequency');
+        let customText = `Custom: Every ${value} ${unit}`;
+        if (unit === 'weeks' && selectedDays.length > 0) {
+            const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+            customText += ` on ${selectedDays.map(d => dayNames[d]).join(', ')}`;
+        }
+        
+        // Create or update the custom option
+        let customOption = frequencyDropdown.querySelector('option[value="Custom"]');
+        customOption.textContent = customText;
+        
+        closeModal();
+    });
+}
+
 window.onload = function() {
     // Load saved data
     if (localStorage.getItem('payCycleStart')) {
@@ -106,6 +186,16 @@ window.onload = function() {
     // Set up file input listener
     document.getElementById('importFileInput').addEventListener('change', importData);
     
+    // Set up custom frequency modal
+    setupCustomFrequencyModal();
+    
+    // Add event listener for frequency dropdown
+    document.getElementById('billFrequency').addEventListener('change', function() {
+        if (this.value === 'Custom') {
+            document.getElementById('customFrequencyModal').style.display = 'block';
+        }
+    });
+    
     updateMasterList();
     generatePayCycles();
 };
@@ -119,12 +209,20 @@ function addBill() {
     let group = document.getElementById("billGroup").value;
     
     if (name && amount && date && frequency && group) {
-        masterBills.push({ name, amount, date, frequency, group });
+        // For custom frequency, save the settings with the bill
+        let billData = { name, amount, date, frequency, group };
+        
+        if (frequency === 'Custom' && customFrequencySettings) {
+            billData.customFrequency = customFrequencySettings;
+        }
+        
+        masterBills.push(billData);
         localStorage.setItem('billData', JSON.stringify(masterBills));
         
         // Clear form fields
         document.getElementById("billName").value = "";
         document.getElementById("billAmount").value = "";
+        customFrequencySettings = null;
         
         updateMasterList();
         generatePayCycles();
@@ -140,8 +238,20 @@ function updateMasterList() {
     
     masterBills.forEach((bill, index) => {
         let li = document.createElement("li");
+        
+        // Create frequency description for display
+        let frequencyDisplay = bill.frequency;
+        if (bill.frequency === 'Custom' && bill.customFrequency) {
+            const cf = bill.customFrequency;
+            frequencyDisplay = `Every ${cf.value} ${cf.unit}`;
+            if (cf.unit === 'weeks' && cf.days && cf.days.length > 0) {
+                const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+                frequencyDisplay += ` on ${cf.days.map(d => dayNames[d]).join(', ')}`;
+            }
+        }
+        
         li.innerHTML = `
-            <span class="bill-details">${bill.name} - ${new Date(bill.date + 'T12:00:00Z').toLocaleDateString()}</span>
+            <span class="bill-details">${bill.name} - ${new Date(bill.date + 'T12:00:00Z').toLocaleDateString()} (${frequencyDisplay})</span>
             <span class="bill-amount">$${bill.amount.toFixed(2)}</span>
         `;
         
@@ -194,6 +304,9 @@ function generatePayCycles() {
             cycleEnd.setDate(cycleStart.getDate() + 14);
         }
         
+        // Adjust the end date to be one day before the next cycle starts
+        cycleEnd.setDate(cycleEnd.getDate() - 1);
+        
         let cycleBills = [];
         
         // Process each bill
@@ -218,6 +331,49 @@ function generatePayCycles() {
                         cycleCount++;
                     } else if (bill.frequency === 'Fortnightly') {
                         checkDate.setDate(checkDate.getDate() + 14);
+                        cycleCount++;
+                    } else if (bill.frequency === 'Yearly') {
+                        // Add a year to the date
+                        checkDate.setFullYear(checkDate.getFullYear() + 1);
+                        cycleCount++;
+                    } else if (bill.frequency === '6-Monthly') {
+                        // Add 6 months - use addOneMonth twice
+                        for (let i = 0; i < 6; i++) {
+                            checkDate = addOneMonth(checkDate);
+                        }
+                        cycleCount++;
+                    } else if (bill.frequency === 'Custom' && bill.customFrequency) {
+                        const cf = bill.customFrequency;
+                        
+                        if (cf.unit === 'days') {
+                            checkDate.setDate(checkDate.getDate() + cf.value);
+                        } else if (cf.unit === 'weeks') {
+                            // Move forward by the specified number of weeks
+                            checkDate.setDate(checkDate.getDate() + (cf.value * 7));
+                            
+                            // If specific days of week are selected, find the next matching day
+                            if (cf.days && cf.days.length > 0) {
+                                let dayFound = false;
+                                let maxDaysToCheck = 7; // To avoid infinite loop
+                                
+                                while (!dayFound && maxDaysToCheck > 0) {
+                                    if (cf.days.includes(checkDate.getDay())) {
+                                        dayFound = true;
+                                    } else {
+                                        checkDate.setDate(checkDate.getDate() + 1);
+                                        maxDaysToCheck--;
+                                    }
+                                }
+                            }
+                        } else if (cf.unit === 'months') {
+                            // Add the specified number of months
+                            for (let i = 0; i < cf.value; i++) {
+                                checkDate = addOneMonth(checkDate);
+                            }
+                        } else if (cf.unit === 'years') {
+                            checkDate.setFullYear(checkDate.getFullYear() + cf.value);
+                        }
+                        
                         cycleCount++;
                     } else {
                         // One-off bill before this cycle - skip it
@@ -262,8 +418,10 @@ function generatePayCycles() {
             income: payCycleIncome
         });
         
-        // Next cycle starts where this one ended
-        cycleStart = new Date(cycleEnd);
+        // Next cycle starts where this one ended plus one day
+        let nextCycleStart = new Date(cycleEnd);
+        nextCycleStart.setDate(nextCycleStart.getDate() + 1);
+        cycleStart = nextCycleStart;
     }
     
     updatePayCycles();
