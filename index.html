@@ -23,9 +23,18 @@
             padding-left: 0;
         }
         li {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 8px;
             padding: 8px;
             border-bottom: 1px solid #eee;
+        }
+        .bill-details {
+            text-align: left;
+        }
+        .bill-amount {
+            text-align: right;
+            min-width: 80px;
         }
         .positive-balance {
             color: green;
@@ -374,7 +383,10 @@
             
             masterBills.forEach((bill, index) => {
                 let li = document.createElement("li");
-                li.textContent = `${bill.name} - $${bill.amount} - ${new Date(bill.date + 'T12:00:00Z').toLocaleDateString()} - ${bill.frequency} - ${bill.group}`;
+                li.innerHTML = `
+                    <span class="bill-details">${bill.name} - ${new Date(bill.date + 'T12:00:00Z').toLocaleDateString()}</span>
+                    <span class="bill-amount">$${bill.amount.toFixed(2)}</span>
+                `;
                 
                 let deleteButton = document.createElement('button');
                 deleteButton.textContent = 'Delete';
@@ -570,7 +582,10 @@
                     
                     groupedBills[group].forEach(bill => {
                         let li = document.createElement("li");
-                        li.textContent = `${bill.name} - ${new Date(bill.date + 'T12:00:00Z').toLocaleDateString()} - ${bill.amount}`;
+                        li.innerHTML = `
+                            <span class="bill-details">${bill.name} - ${new Date(bill.date + 'T12:00:00Z').toLocaleDateString()}</span>
+                            <span class="bill-amount">$${bill.amount.toFixed(2)}</span>
+                        `;
                         ul.appendChild(li);
                     });
                     
