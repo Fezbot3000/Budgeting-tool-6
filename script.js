@@ -99,45 +99,30 @@ function getLastDayOfMonth(year, month) {
     return new Date(year, month + 1, 0).getDate();
 }
 
-// Helper function to advance a date by one month, with special handling for month-end dates
+// Helper function to advance a date by one month, preserving the original day if possible
 function addOneMonth(date) {
     // Create a new date object to avoid modifying the original
     const d = new Date(date.getTime());
     
-    // Check if this is the 31st or the last day of the month
+    // Store original day and month details
     const originalDay = d.getDate();
-    const isLast = isLastDayOfMonth(d);
-    const is31st = originalDay === 31;
+    const originalMonth = d.getMonth();
+    const originalYear = d.getFullYear();
     
-    // Store current year and month
-    const currentYear = d.getFullYear();
-    const currentMonth = d.getMonth();
+    // Determine the next month and year
+    let nextMonth = (originalMonth + 1) % 12;
+    let nextYear = nextMonth === 0 ? originalYear + 1 : originalYear;
     
-    // Calculate next month
-    let nextMonth = (currentMonth + 1) % 12;
-    let nextYear = nextMonth === 0 ? currentYear + 1 : currentYear;
+    // Create a date with the same day in the next month
+    let newDate = new Date(nextYear, nextMonth, originalDay);
     
-    // For 31st or last day of month, always use the last day of the next month
-    if (is31st || isLast) {
-        // Get the last day of the next month
-        const lastDayOfNextMonth = getLastDayOfMonth(nextYear, nextMonth);
-        
-        // Create a new date on the last day of next month
-        // Use noon to avoid timezone issues
-        const result = new Date(Date.UTC(nextYear, nextMonth, lastDayOfNextMonth, 12, 0, 0));
-        
-        return result;
-    } else {
-        // For normal days, handle month length differences
-        const lastDayOfNextMonth = getLastDayOfMonth(nextYear, nextMonth);
-        const targetDay = Math.min(originalDay, lastDayOfNextMonth);
-        
-        // Create a new date on the target day
-        // Use noon to avoid timezone issues
-        const result = new Date(Date.UTC(nextYear, nextMonth, targetDay, 12, 0, 0));
-        
-        return result;
+    // If the day doesn't match (due to month length differences), 
+    // adjust to the last day of the month
+    if (newDate.getMonth() !== nextMonth) {
+        newDate = new Date(nextYear, nextMonth + 1, 0);
     }
+    
+    return newDate;
 }
 
 // Function to create the financial chart
@@ -684,7 +669,7 @@ function generatePayCycles() {
     let cycleStart = new Date(payCycleStart);
     
     // Generate pay cycles
-    for (let i = 0; i < 26; i++) {
+    for (let i = 0; i < 27; i++) {
         let cycleEnd = new Date(cycleStart);
         
         // Set cycle end date based on frequency
@@ -817,7 +802,6 @@ function generatePayCycles() {
     updatePayCycles();
 }
 
-// Update the displayed pay cycles
 // Update the displayed pay cycles
 function updatePayCycles() {
     let cyclesDiv = document.getElementById("payCycles");
