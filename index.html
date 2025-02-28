@@ -137,6 +137,34 @@
         .summary-bar button {
             margin-left: 10px;
         }
+
+        /* Import/Export buttons */
+        .data-management {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .data-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .data-btn:hover {
+            background-color: #218838;
+        }
+        .import-btn {
+            background-color: #17a2b8;
+        }
+        .import-btn:hover {
+            background-color: #138496;
+        }
+        #importFileInput {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -153,6 +181,13 @@
         </label><br>
         <label>Income per Pay Cycle: $<input type="number" step="0.01" id="payCycleIncome" placeholder="Enter income amount"></label><br>
         <button onclick='setPayCycle()'>Set Pay Cycle</button>
+        
+        <!-- Data Import/Export Section -->
+        <div class="data-management">
+            <button class="data-btn" onclick="exportData()">Export Data</button>
+            <input type="file" id="importFileInput" accept=".json">
+            <button class="data-btn import-btn" onclick="triggerImportDialog()">Import Data</button>
+        </div>
     </div>
     
     <div class="section">
@@ -301,6 +336,9 @@
                 
                 this.textContent = allExpanded ? 'Expand All' : 'Collapse All';
             });
+            
+            // Set up file input listener
+            document.getElementById('importFileInput').addEventListener('change', importData);
             
             updateMasterList();
             generatePayCycles();
@@ -559,6 +597,99 @@
                 // Add pay cycle to container
                 cyclesDiv.appendChild(cycleContainer);
             });
+        }
+
+        // Export data to a JSON file
+        function exportData() {
+            // Create data object with all stored information
+            const exportData = {
+                payCycleStart: localStorage.getItem('payCycleStart'),
+                payCycleFrequency: localStorage.getItem('payCycleFrequency'),
+                payCycleIncome: localStorage.getItem('payCycleIncome'),
+                billData: localStorage.getItem('billData')
+            };
+
+            // Convert to JSON string
+            const dataStr = JSON.stringify(exportData, null, 2);
+            
+            // Create a Blob with the data
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            
+            // Create a temporary link element
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            
+            // Generate filename with current date
+            const date = new Date();
+            const dateStr = date.toISOString().split('T')[0];
+            a.download = `bill_management_export_${dateStr}.json`;
+            
+            // Trigger download
+            document.body.appendChild(a);
+            a.click();
+            
+            // Cleanup
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+            
+            alert('Data exported successfully!');
+        }
+
+        // Trigger file input dialog for import
+        function triggerImportDialog() {
+            document.getElementById('importFileInput').click();
+        }
+
+        // Import data from a JSON file
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    // Parse the JSON data
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    // Validate the data structure
+                    if (!importedData.billData) {
+                        throw new Error('Invalid data format: Missing bill data');
+                    }
+                    
+                    // Confirm import
+                    if (confirm('This will replace your current data. Are you sure you want to proceed?')) {
+                        // Store the imported data in localStorage
+                        if (importedData.payCycleStart) {
+                            localStorage.setItem('payCycleStart', importedData.payCycleStart);
+                        }
+                        
+                        if (importedData.payCycleFrequency) {
+                            localStorage.setItem('payCycleFrequency', importedData.payCycleFrequency);
+                        }
+                        
+                        if (importedData.payCycleIncome) {
+                            localStorage.setItem('payCycleIncome', importedData.payCycleIncome);
+                        }
+                        
+                        if (importedData.billData) {
+                            localStorage.setItem('billData', importedData.billData);
+                        }
+                        
+                        // Reload the page to apply changes
+                        alert('Data imported successfully! The page will now reload.');
+                        location.reload();
+                    }
+                } catch (error) {
+                    alert('Error importing data: ' + error.message);
+                    console.error('Import error:', error);
+                }
+            };
+            
+            reader.readAsText(file);
+            
+            // Clear the file input so the same file can be selected again
+            event.target.value = '';
         }
     </script>
 </body>
