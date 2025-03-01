@@ -55,7 +55,9 @@ function importData(event) {
     
     // Clear the file input so the same file can be selected again
     event.target.value = '';
-}// Initialize variables and load data from local storage
+}
+
+// Initialize variables and load data from local storage
 let masterBills = [];
 let payCycles = [];
 let payCycleStart = new Date();
@@ -87,46 +89,238 @@ function toggleTheme() {
     setTheme(newTheme);
 }
 
-// Helper function to check if a date is the last day of its month
-function isLastDayOfMonth(date) {
-    const d = new Date(date);
-    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-    return d.getDate() === lastDay;
+/**
+ * Normalizes a date by removing time components
+ * @param {Date} date - The date to normalize
+ * @returns {Date} - Normalized date set to 12:00:00
+ */
+function normalizeDate(date) {
+    const normalized = new Date(date);
+    normalized.setHours(12, 0, 0, 0);
+    return normalized;
 }
 
-// Helper function to get the last day of a month
+/**
+ * Creates a date object with consistent formatting from a string
+ * @param {string} dateStr - Date string in format DD/MM/YYYY or YYYY-MM-DD
+ * @returns {Date} - JavaScript Date object
+ */
+function parseFormattedDate(dateStr) {
+    if (dateStr.includes('/')) {
+        // Handle dates in the format DD/MM/YYYY
+        const [day, month, year] = dateStr.split('/').map(Number);
+        return normalizeDate(new Date(year, month - 1, day));
+    } else {
+        // Handle ISO format YYYY-MM-DD
+        return normalizeDate(new Date(dateStr));
+    }
+}
+
+/**
+ * Gets the last day of a specific month
+ * @param {number} year - The year
+ * @param {number} month - The month (0-11)
+ * @returns {number} - The last day of the month
+ */
 function getLastDayOfMonth(year, month) {
     return new Date(year, month + 1, 0).getDate();
 }
 
-// Helper function to advance a date by one month, preserving the original day if possible
-function addOneMonth(date) {
-    // Create a new date object to avoid modifying the original
-    const d = new Date(date.getTime());
+/**
+ * Advances a date by a specific number of months while preserving the day of month when possible
+ * With special handling for end-of-month cases
+ * @param {Date} date - The original date
+ * @param {number} months - Number of months to add
+ * @param {boolean} preserveEndOfMonth - Whether to always use last day for end-of-month dates
+ * @returns {Date} - The new date
+ */
+function advanceMonths(date, months, preserveEndOfMonth = false) {
+    const originalDate = new Date(date);
+    const originalDay = originalDate.getDate();
+    const originalMonth = originalDate.getMonth();
+    const originalYear = originalDate.getFullYear();
     
-    // Store original day and month details
-    const originalDay = d.getDate();
-    const originalMonth = d.getMonth();
-    const originalYear = d.getFullYear();
+    // Calculate target month and year
+    let targetMonth = (originalMonth + months) % 12;
+    let targetYear = originalYear + Math.floor((originalMonth + months) / 12);
     
-    // Determine the next month and year
-    let nextMonth = (originalMonth + 1) % 12;
-    let nextYear = nextMonth === 0 ? originalYear + 1 : originalYear;
+    // Get the last day of the original and target months
+    const originalLastDay = getLastDayOfMonth(originalYear, originalMonth);
+    const targetLastDay = getLastDayOfMonth(targetYear, targetMonth);
     
-    // Create a date with the same day in the next month
-    let newDate = new Date(nextYear, nextMonth, originalDay);
+    let targetDay = originalDay;
     
-    // If the day doesn't match (due to month length differences), 
-    // adjust to the last day of the month
-    if (newDate.getMonth() !== nextMonth) {
-        newDate = new Date(nextYear, nextMonth + 1, 0);
+    // Special handling for end-of-month cases
+    if (originalDay === originalLastDay || (originalDay === 30 && preserveEndOfMonth)) {
+        // If bill was on the last day of month OR specifically on the 30th with preserve flag
+        targetDay = targetLastDay;
+    } else if (originalDay === 31) {
+        // Always use 31st if available, otherwise last day
+        targetDay = targetLastDay >= 31 ? 31 : targetLastDay;
+    } else if (originalDay === 30) {
+        // Always use 30th if available, otherwise last day
+        targetDay = targetLastDay >= 30 ? 30 : targetLastDay;
+    } else if (originalDay === 29) {
+        // Always use 29th if available, otherwise last day
+        targetDay = targetLastDay >= 29 ? 29 : targetLastDay;
+    } else if (targetDay > targetLastDay) {
+        // For other days, if target day exceeds last day of target month, use last day
+        targetDay = targetLastDay;
     }
     
-    return newDate;
+    return normalizeDate(new Date(targetYear, targetMonth, targetDay));
+}
+
+/**
+ * Finds the next occurrence of a specific day of the week
+ * @param {Date} date - Starting date
+ * @param {number} dayOfWeek - Day of week (0-6, where 0 is Sunday)
+ * @returns {Date} - Date of the next occurrence
+ */
+function getNextDayOfWeek(date, dayOfWeek) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + (7 + dayOfWeek - result.getDay()) % 7);
+    return normalizeDate(result);
+}
+
+/**
+ * Advances a date by a specific number of days
+ * @param {Date} date - The original date
+ * @param {number} days - Number of days to add
+ * @returns {Date} - The new date
+ */
+function advanceDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return normalizeDate(result);
+}
+
+/**
+ * Advances a date by a specific number of weeks
+ * @param {Date} date - The original date
+ * @param {number} weeks - Number of weeks to add
+ * @returns {Date} - The new date
+ */
+function advanceWeeks(date, weeks) {
+    return advanceDays(date, weeks * 7);
+}
+
+/**
+ * Advances a date by a specific number of years
+ * @param {Date} date - The original date
+ * @param {number} years - Number of years to add
+ * @returns {Date} - The new date
+ */
+function advanceYears(date, years) {
+    const result = new Date(date);
+    
+    // Store original values
+    const originalDay = result.getDate();
+    const originalMonth = result.getMonth();
+    
+    // Set the new year
+    result.setFullYear(result.getFullYear() + years);
+    
+    // Handle Feb 29 in non-leap years
+    if (originalMonth === 1 && originalDay === 29 && result.getMonth() !== 1) {
+        result.setDate(28);
+    }
+    
+    return normalizeDate(result);
+}
+
+/**
+ * Formats a date as YYYY-MM-DD for consistent storage
+ * @param {Date} date - The date to format
+ * @returns {string} - Formatted date string
+ */
+function formatDateForStorage(date) {
+    return date.toISOString().split('T')[0];
+}
+
+/**
+ * Determines if a date is within an inclusive date range
+ * @param {Date} date - The date to check
+ * @param {Date} startDate - Range start (inclusive)
+ * @param {Date} endDate - Range end (inclusive)
+ * @returns {boolean} - True if date is within range
+ */
+function isDateInRange(date, startDate, endDate) {
+    const normalizedDate = normalizeDate(date);
+    const normalizedStart = normalizeDate(startDate);
+    const normalizedEnd = normalizeDate(endDate);
+    
+    return normalizedDate >= normalizedStart && normalizedDate <= normalizedEnd;
+}
+
+/**
+ * Calculates the next occurrence of a bill based on its frequency
+ * @param {Object} bill - The bill object
+ * @param {Date} currentDate - Current date to calculate from
+ * @param {Date} originalBillDate - The original bill date
+ * @returns {Date} - Next occurrence date
+ */
+function calculateNextBillDate(bill, currentDate, originalBillDate) {
+    const current = new Date(currentDate);
+    
+    switch (bill.frequency) {
+        case 'Monthly':
+            return advanceMonths(current, 1);
+            
+        case 'Fortnightly':
+            return advanceDays(current, 14);
+            
+        case 'Yearly':
+            return advanceYears(current, 1);
+            
+        case '6-Monthly':
+            return advanceMonths(current, 6);
+            
+        case 'Custom':
+            if (!bill.customFrequency) return null;
+            
+            const cf = bill.customFrequency;
+            
+            if (cf.unit === 'days') {
+                return advanceDays(current, cf.value);
+            } else if (cf.unit === 'weeks') {
+                const nextDate = advanceWeeks(current, cf.value);
+                
+                // Handle specific days of week if specified
+                if (cf.days && cf.days.length > 0) {
+                    // Find the next matching day of week
+                    for (let i = 0; i < 7; i++) {
+                        const checkDate = advanceDays(nextDate, i);
+                        if (cf.days.includes(checkDate.getDay())) {
+                            return checkDate;
+                        }
+                    }
+                }
+                
+                return nextDate;
+            } else if (cf.unit === 'months') {
+                return advanceMonths(current, cf.value);
+            } else if (cf.unit === 'years') {
+                return advanceYears(current, cf.value);
+            }
+            
+            return null;
+            
+        case 'Every 1 weeks on Mo':
+            // Special case for Monday weekly payments
+            return getNextDayOfWeek(advanceDays(current, 1), 1); // 1 = Monday
+            
+        case 'One-Off':
+            // One-off payments don't have a next occurrence
+            return null;
+            
+        default:
+            console.warn(`Unknown frequency: ${bill.frequency}`);
+            return null;
+    }
 }
 
 // Function to create the financial chart
-
 function createFinancialChart() {
     // If the financialChart element doesn't exist, return
     const chartElement = document.getElementById('financialChart');
@@ -614,7 +808,16 @@ function updateMasterList() {
             }
         }
         
-        const billDate = new Date(bill.date + 'T12:00:00Z');
+        // Parse date safely regardless of format
+        let billDate;
+        if (typeof bill.date === 'string' && bill.date.includes('/')) {
+            // Handle DD/MM/YYYY format
+            const [day, month, year] = bill.date.split('/').map(Number);
+            billDate = new Date(year, month - 1, day);
+        } else {
+            // Handle ISO format YYYY-MM-DD
+            billDate = new Date(bill.date + 'T12:00:00Z');
+        }
         
         li.innerHTML = `
             <span class="bill-details">
@@ -666,121 +869,105 @@ function setPayCycle() {
 // Generate all upcoming pay cycles
 function generatePayCycles() {
     payCycles = [];
-    let cycleStart = new Date(payCycleStart);
+    let cycleStart = normalizeDate(new Date(payCycleStart));
     
     // Generate pay cycles
-    for (let i = 0; i < 27; i++) {
-        let cycleEnd = new Date(cycleStart);
+    for (let i = 0; i < 29; i++) {
+        let cycleEnd;
         
         // Set cycle end date based on frequency
         if (payCycleFrequency === 'Monthly') {
-            cycleEnd.setMonth(cycleEnd.getMonth() + 1);
+            cycleEnd = advanceMonths(cycleStart, 1);
+            // Adjust back by 1 day to not overlap with next cycle
+            cycleEnd.setDate(cycleEnd.getDate() - 1);
         } else { // Fortnightly
-            cycleEnd.setDate(cycleStart.getDate() + 14);
+            cycleEnd = new Date(cycleStart);
+            cycleEnd.setDate(cycleStart.getDate() + 14 - 1); // -1 to avoid overlap
         }
         
-        // Adjust the end date to be one day before the next cycle starts
-        cycleEnd.setDate(cycleEnd.getDate() - 1);
+        // Normalize the end date (remove time component)
+        cycleEnd = normalizeDate(cycleEnd);
         
         let cycleBills = [];
         
         // Process each bill
         masterBills.forEach(bill => {
-            // Clone the original bill date
-            let currentBillDate = new Date(bill.date);
+            // Parse the original bill date with our consistent formatter
+            let originalBillDate;
             
-            // Check if this is a 31st day bill
-            const is31st = currentBillDate.getDate() === 31;
-            
-            // Find the first occurrence on or after the first cycle
-            if (i === 0) {
-                // For first cycle, use the original date
+            // Check if the date is already in the right format (for bills from master list)
+            if (typeof bill.date === 'string' && bill.date.includes('/')) {
+                originalBillDate = parseFormattedDate(bill.date);
             } else {
-                // For subsequent cycles, calculate based on frequency
-                let checkDate = new Date(bill.date);
-                let cycleCount = 0;
-                
-                while (checkDate < cycleStart) {
-                    if (bill.frequency === 'Monthly') {
-                        checkDate = addOneMonth(checkDate);
-                        cycleCount++;
-                    } else if (bill.frequency === 'Fortnightly') {
-                        checkDate.setDate(checkDate.getDate() + 14);
-                        cycleCount++;
-                    } else if (bill.frequency === 'Yearly') {
-                        // Add a year to the date
-                        checkDate.setFullYear(checkDate.getFullYear() + 1);
-                        cycleCount++;
-                    } else if (bill.frequency === '6-Monthly') {
-                        // Add 6 months - use addOneMonth 6 times
-                        for (let i = 0; i < 6; i++) {
-                            checkDate = addOneMonth(checkDate);
-                        }
-                        cycleCount++;
-                    } else if (bill.frequency === 'Custom' && bill.customFrequency) {
-                        const cf = bill.customFrequency;
-                        
-                        if (cf.unit === 'days') {
-                            checkDate.setDate(checkDate.getDate() + cf.value);
-                        } else if (cf.unit === 'weeks') {
-                            // Move forward by the specified number of weeks
-                            checkDate.setDate(checkDate.getDate() + (cf.value * 7));
-                            
-                            // If specific days of week are selected, find the next matching day
-                            if (cf.days && cf.days.length > 0) {
-                                let dayFound = false;
-                                let maxDaysToCheck = 7; // To avoid infinite loop
-                                
-                                while (!dayFound && maxDaysToCheck > 0) {
-                                    if (cf.days.includes(checkDate.getDay())) {
-                                        dayFound = true;
-                                    } else {
-                                        checkDate.setDate(checkDate.getDate() + 1);
-                                        maxDaysToCheck--;
-                                    }
-                                }
-                            }
-                        } else if (cf.unit === 'months') {
-                            // Add the specified number of months
-                            for (let i = 0; i < cf.value; i++) {
-                                checkDate = addOneMonth(checkDate);
-                            }
-                        } else if (cf.unit === 'years') {
-                            checkDate.setFullYear(checkDate.getFullYear() + cf.value);
-                        }
-                        
-                        cycleCount++;
-                    } else {
-                        // One-off bill before this cycle - skip it
-                        break;
-                    }
-                }
-                
-                currentBillDate = new Date(checkDate);
+                originalBillDate = normalizeDate(new Date(bill.date));
             }
             
-            // Check if this bill occurs in this cycle
-            if (currentBillDate >= cycleStart && currentBillDate <= cycleEnd) {
-                // Make sure we're using UTC dates to avoid timezone issues
-                const formattedDate = new Date(currentBillDate.getTime() - (currentBillDate.getTimezoneOffset() * 60000))
-                    .toISOString().split('T')[0];
+            // For first cycle, start with the original date
+            let currentBillDate = new Date(originalBillDate);
+            
+            // For subsequent cycles, find the right occurrence within this cycle
+            if (i > 0) {
+                // Start with the original date
+                currentBillDate = new Date(originalBillDate);
+                
+                // Get the original day of month for special handling
+                const originalDay = originalBillDate.getDate();
+                const isEndOfMonth = originalDay >= 28;
+                
+                // Keep advancing the date until we reach or pass the cycle start
+                while (currentBillDate < cycleStart) {
+                    const nextDate = calculateNextBillDate(bill, currentBillDate, originalBillDate);
+                    
+                    if (!nextDate) {
+                        // Handle one-off bills
+                        if (bill.frequency === 'One-Off') {
+                            // One-off bill should only appear in its specific cycle
+                            break;
+                        } else {
+                            // Unknown frequency or calculation error
+                            console.warn(`Could not calculate next date for bill: ${bill.name}`);
+                            break;
+                        }
+                    }
+                    
+                    currentBillDate = nextDate;
+                }
+            }
+            
+            // After finding the right occurrence for this cycle, check if it falls within the cycle
+            // Use inclusive comparison for both start and end dates
+            if (isDateInRange(currentBillDate, cycleStart, cycleEnd)) {
+                // Convert to a format safe for storage with consistent timezone handling
+                const formattedDate = formatDateForStorage(currentBillDate);
                 
                 cycleBills.push({
                     ...bill,
-                    date: formattedDate
+                    date: formattedDate,
+                    // Store original day for debugging
+                    _originalDay: originalBillDate.getDate()
                 });
             }
             
-            // Add any additional occurrences in this cycle (for frequent bills)
-            if (bill.frequency === 'Fortnightly') {
-                let nextDate = new Date(currentBillDate);
-                nextDate.setDate(nextDate.getDate() + 14);
+            // For weekly or fortnightly bills, check for additional occurrences within this cycle
+            if (bill.frequency === 'Fortnightly' || 
+                bill.frequency === 'Every 1 weeks on Mo' || 
+                (bill.frequency === 'Custom' && bill.customFrequency && bill.customFrequency.unit === 'weeks')) {
                 
-                if (nextDate <= cycleEnd) {
+                let nextDate = calculateNextBillDate(bill, currentBillDate, originalBillDate);
+                
+                // Keep adding occurrences as long as they fall within this cycle
+                while (nextDate && isDateInRange(nextDate, cycleStart, cycleEnd)) {
+                    const formattedNextDate = formatDateForStorage(nextDate);
+                    
+                    // Add this occurrence to the cycle
                     cycleBills.push({
                         ...bill,
-                        date: nextDate.toISOString().split('T')[0]
+                        date: formattedNextDate,
+                        _originalDay: originalBillDate.getDate()
                     });
+                    
+                    // Calculate the next occurrence
+                    nextDate = calculateNextBillDate(bill, nextDate, originalBillDate);
                 }
             }
         });
@@ -794,9 +981,7 @@ function generatePayCycles() {
         });
         
         // Next cycle starts where this one ended plus one day
-        let nextCycleStart = new Date(cycleEnd);
-        nextCycleStart.setDate(nextCycleStart.getDate() + 1);
-        cycleStart = nextCycleStart;
+        cycleStart = advanceDays(cycleEnd, 1);
     }
     
     updatePayCycles();
