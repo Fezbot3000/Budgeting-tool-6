@@ -1,170 +1,37 @@
-.chart-container {
-    position: relative;
-    height: 300px;
-    margin-top: 20px;
-    background-color: var(--md-surface);
-    padding: 16px;
-    border-radius: var(--md-shape-small);
-}
-
-/* Dark mode adjustments for the chart */
-[data-theme="dark"] .chart-container {
-    background-color: var(--md-surface-variant);
-}
-
-/* Responsive chart adjustments */
-@media (max-width: 768px) {
-    .chart-container {
-        height: 250px;
-    }
-      .container, .pay-cycle, .cycle-header, .cycle-content, 
-  #masterListContainer, #payCycles, .financial-info {
-    width: 100%;
-    max-width: 100%;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-left: 0;
-    margin-right: 0;
-    box-sizing: border-box;
-  }
-  
-  /* Adjust main container padding */
-  body, main {
-    padding: 0;
-    margin: 0;
-  }
-  
-  /* Make buttons more touch-friendly */
-  button, .btn, .toggle-btn {
-    min-height: 44px;
-    min-width: 44px;
-    padding: 10px;
-  }
-  
-  /* Adjust font sizes for better readability */
-  h1 { font-size: 1.8rem; }
-  h2 { font-size: 1.5rem; }
-  h3 { font-size: 1.2rem; }
-  
-  /* Give more breathing room between elements */
-  .pay-cycle {
-    margin-bottom: 15px;
-  }
-  
-  /* Ensure financial info stays on one line if possible */
-  .financial-info p {
-    margin-right: 10px;
-    white-space: nowrap;
-  }
-  
-  /* Adjust chart container height */
-  .chart-container {
-    height: 300px;
-    width: 100%;
-  }
-}
-
-
-/* Material Design 3 Variables */
+/* Modern UI Variables */
 :root {
     /* Light Theme Colors */
-    --md-primary: #006495;
-    --md-primary-container: #cde5ff;
-    --md-on-primary: #ffffff;
-    --md-on-primary-container: #001e31;
-    --md-secondary: #50606e;
-    --md-secondary-container: #d3e5f5;
-    --md-on-secondary: #ffffff;
-    --md-on-secondary-container: #0c1d29;
-    --md-tertiary: #65587b;
-    --md-tertiary-container: #eadcff;
-    --md-on-tertiary: #ffffff;
-    --md-on-tertiary-container: #1f1635;
-    --md-error: #ba1a1a;
-    --md-error-container: #ffdad6;
-    --md-on-error: #ffffff;
-    --md-on-error-container: #410002;
-    --md-background: #fdfcff;
-    --md-on-background: #1a1c1e;
-    --md-surface: #fdfcff;
-    --md-on-surface: #1a1c1e;
-    --md-surface-variant: #dfe2eb;
-    --md-on-surface-variant: #43474e;
-    --md-outline: #73777f;
-    --md-inverse-on-surface: #f1f0f4;
-    --md-inverse-surface: #2f3033;
-    --md-shadow: rgba(0, 0, 0, 0.1);
-
-    /* System colors */
-    --md-positive: #006e1c;
-    --md-on-positive: #ffffff;
-    --md-positive-container: #98f990;
-    --md-on-positive-container: #002204;
-    --md-negative: #ba1a1a;
-    --md-on-negative: #ffffff;
-    --md-negative-container: #ffdad6;
-    --md-on-negative-container: #410002;
-
-    /* Material Design elevation */
-    --md-elevation-level0: none;
-    --md-elevation-level1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-    --md-elevation-level2: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
-    --md-elevation-level3: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
-    --md-elevation-level4: 0px 6px 10px 4px rgba(0, 0, 0, 0.15), 0px 2px 3px rgba(0, 0, 0, 0.3);
-    --md-elevation-level5: 0px 8px 12px 6px rgba(0, 0, 0, 0.15), 0px 4px 4px rgba(0, 0, 0, 0.3);
-
-    /* Material Design typography */
-    --md-font-family: 'Roboto', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    
-    /* Material Design shape */
-    --md-shape-small: 8px;
-    --md-shape-medium: 12px;
-    --md-shape-large: 16px;
-    --md-shape-xlarge: 28px;
-    
-    /* Material Design transitions */
-    --md-transition-standard: 0.2s cubic-bezier(0.2, 0, 0, 1);
-    --md-transition-emphasized: 0.2s cubic-bezier(0.2, 0, 0, 1);
+    --app-primary: #000000;
+    --app-background: #f8f9fa;
+    --app-surface: #ffffff;
+    --app-text: #212529;
+    --app-text-secondary: #6c757d;
+    --app-border: #e9ecef;
+    --app-accent: #0d6efd;
+    --app-positive: #10b981;
+    --app-negative: #ef4444;
+    --app-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --app-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.02);
+    --app-radius-sm: 8px;
+    --app-radius-md: 12px;
+    --app-radius-lg: 16px;
+    --app-radius-circle: 50%;
+    --app-transition: all 0.2s ease;
+    --app-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Dark Theme Colors */
 [data-theme="dark"] {
-    --md-primary: #90cdff;
-    --md-primary-container: #004b73;
-    --md-on-primary: #003355;
-    --md-on-primary-container: #cde5ff;
-    --md-secondary: #b7c9d9;
-    --md-secondary-container: #364956;
-    --md-on-secondary: #22323f;
-    --md-on-secondary-container: #d3e5f5;
-    --md-tertiary: #cebfe4;
-    --md-tertiary-container: #4c4163;
-    --md-on-tertiary: #352c4b;
-    --md-on-tertiary-container: #eadcff;
-    --md-error: #ffb4ab;
-    --md-error-container: #93000a;
-    --md-on-error: #690005;
-    --md-on-error-container: #ffdad6;
-    --md-background: #1a1c1e;
-    --md-on-background: #e2e2e6;
-    --md-surface: #1a1c1e;
-    --md-on-surface: #e2e2e6;
-    --md-surface-variant: #43474e;
-    --md-on-surface-variant: #c3c7cf;
-    --md-outline: #8d9199;
-    --md-inverse-on-surface: #1a1c1e;
-    --md-inverse-surface: #e2e2e6;
-    --md-shadow: rgba(0, 0, 0, 0.25);
-
-    /* System colors */
-    --md-positive: #7ddc77;
-    --md-on-positive: #00390c;
-    --md-positive-container: #005314;
-    --md-on-positive-container: #98f990;
-    --md-negative: #ffb4ab;
-    --md-on-negative: #690005;
-    --md-negative-container: #93000a;
-    --md-on-negative-container: #ffdad6;
+    --app-background: #121212;
+    --app-surface: #1e1e1e;
+    --app-text: #e9ecef;
+    --app-text-secondary: #adb5bd;
+    --app-border: #343a40;
+    --app-accent: #3b82f6;
+    --app-positive: #34d399;
+    --app-negative: #f87171;
+    --app-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --app-shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Base Styles */
@@ -173,46 +40,59 @@ html {
 }
 
 body {
-    font-family: var(--md-font-family);
-    background-color: var(--md-background);
-    color: var(--md-on-background);
+    font-family: var(--app-font);
+    background-color: var(--app-background);
+    color: var(--app-text);
     margin: 0;
-    padding: 16px;
+    padding: 0;
     line-height: 1.5;
-    transition: background-color 0.3s, color 0.3s;
+    transition: var(--app-transition);
 }
 
 /* Layout */
 .container {
-    max-width: 1200px;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 16px;
+    padding: 20px;
 }
 
 h1, h2, h3, h4, h5, h6 {
     margin-top: 0;
-    color: var(--md-on-surface);
+    color: var(--app-text);
+    font-weight: 600;
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 24px;
+    padding-bottom: 8px;
+}
+
+h2:not(:first-child) {
+    margin-top: 40px;
 }
 
 /* Form Elements */
 input, select, textarea {
-    font-family: var(--md-font-family);
+    font-family: var(--app-font);
     font-size: 1rem;
-    background-color: var(--md-surface);
-    color: var(--md-on-surface);
-    border: 1px solid var(--md-outline);
-    border-radius: var(--md-shape-small);
+    background-color: var(--app-surface);
+    color: var(--app-text);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-sm);
     padding: 12px 16px;
-    margin-bottom: 16px;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 20px;
+    transition: var(--app-transition);
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Add dropdown arrow for select elements */
 select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2373777f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 10px center;
     background-size: 20px;
@@ -221,14 +101,14 @@ select {
 
 input:focus, select:focus, textarea:focus {
     outline: none;
-    border-color: var(--md-primary);
-    box-shadow: 0 0 0 2px var(--md-primary-container);
+    border-color: var(--app-accent);
+    box-shadow: 0 0 0 1px var(--app-accent);
 }
 
 label {
     display: block;
     margin-bottom: 8px;
-    color: var(--md-on-surface-variant);
+    color: var(--app-text-secondary);
     font-weight: 500;
 }
 
@@ -239,8 +119,9 @@ label {
 .input-prefix {
     position: absolute;
     left: 12px;
-    top: 12px;
-    color: var(--md-on-surface-variant);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--app-text-secondary);
 }
 
 input[type="number"] {
@@ -249,107 +130,168 @@ input[type="number"] {
 
 /* Buttons */
 button {
-    font-family: var(--md-font-family);
+    font-family: var(--app-font);
     font-size: 0.875rem;
     font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 10px 24px;
-    border-radius: var(--md-shape-small);
+    padding: 12px 20px;
+    border-radius: var(--app-radius-sm);
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s, box-shadow 0.2s;
+    transition: var(--app-transition);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    margin-right: 8px;
+    margin-bottom: 8px;
 }
 
-.material-icons {
+.material-icons-round {
     font-size: 18px;
     line-height: 1;
 }
 
-/* Filled Button (Primary) */
-.btn-filled {
-    background-color: var(--md-primary);
-    color: var(--md-on-primary);
-    box-shadow: var(--md-elevation-level1);
+/* Primary Button */
+.btn-primary {
+    background-color: var(--app-primary);
+    color: white;
+    box-shadow: var(--app-shadow-sm);
 }
 
-.btn-filled:hover {
-    background-color: var(--md-primary);
-    box-shadow: var(--md-elevation-level2);
+.btn-primary:hover {
+    opacity: 0.9;
 }
 
-/* Tonal Button (Secondary) */
-.btn-tonal {
-    background-color: var(--md-secondary-container);
-    color: var(--md-on-secondary-container);
+/* Set Pay Cycle Button */
+.btn-primary:first-child {
+    background-color: #e2e8f0;
+    color: #0f172a;
 }
 
-.btn-tonal:hover {
-    background-color: var(--md-secondary-container);
-    box-shadow: var(--md-elevation-level1);
+/* Add Bill Button */
+.add-bill-btn {
+    background-color: black !important;
+    color: white !important;
+    font-weight: 500;
+    padding: 12px 24px;
+    border-radius: var(--app-radius-sm);
+}
+
+/* Secondary Button */
+.btn-secondary {
+    background-color: #f1f5f9;
+    color: var(--app-text);
+}
+
+.btn-secondary:hover {
+    background-color: #e2e8f0;
 }
 
 /* Outlined Button */
 .btn-outlined {
     background-color: transparent;
-    color: var(--md-primary);
-    border: 1px solid var(--md-outline);
+    color: var(--app-text);
+    border: 1px solid var(--app-border);
 }
 
 .btn-outlined:hover {
-    background-color: rgba(0, 100, 149, 0.08);
+    background-color: rgba(0, 0, 0, 0.03);
 }
 
 /* Text Button */
 .btn-text {
     background-color: transparent;
-    color: var(--md-primary);
+    color: var(--app-accent);
     padding: 10px 12px;
 }
 
 .btn-text:hover {
-    background-color: rgba(0, 100, 149, 0.08);
+    background-color: rgba(13, 110, 253, 0.05);
 }
 
 /* Cards */
-.card {
-    background-color: var(--md-surface);
-    border-radius: var(--md-shape-medium);
-    box-shadow: var(--md-elevation-level1);
+.card, .section {
+    background-color: var(--app-surface);
+    border-radius: var(--app-radius-md);
+    box-shadow: var(--app-shadow);
     overflow: hidden;
     margin-bottom: 24px;
-    transition: box-shadow 0.2s;
-}
-
-.card:hover {
-    box-shadow: var(--md-elevation-level2);
+    transition: var(--app-transition);
+    border: 1px solid var(--app-border);
+    padding: 20px;
 }
 
 .card-header {
     padding: 16px 24px;
-    border-bottom: 1px solid var(--md-surface-variant);
+    border-bottom: 1px solid var(--app-border);
 }
 
 .card-content {
     padding: 16px 24px;
 }
 
-/* Custom styles for Bill Management App */
-.section {
-    background-color: var(--md-surface);
-    border-radius: var(--md-shape-medium);
-    box-shadow: var(--md-elevation-level1);
-    padding: 24px;
-    margin-bottom: 24px;
-    transition: box-shadow 0.3s;
+/* Chart container */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-top: 20px;
+    background-color: var(--app-surface);
+    padding: 16px;
+    border-radius: var(--app-radius-md);
+    box-shadow: var(--app-shadow);
+    border: 1px solid var(--app-border);
 }
 
-.section:hover {
-    box-shadow: var(--md-elevation-level2);
+/* Responsive chart adjustments */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 250px;
+    }
+    .container, .pay-cycle, .cycle-header, .cycle-content, 
+    #masterListContainer, #payCycles, .financial-info {
+        width: 100%;
+        max-width: 100%;
+        padding-left: 16px;
+        padding-right: 16px;
+        margin-left: 0;
+        margin-right: 0;
+        box-sizing: border-box;
+    }
+    
+    /* Adjust main container padding */
+    body, main {
+        padding: 0;
+        margin: 0;
+    }
+    
+    /* Make buttons more touch-friendly */
+    button, .btn, .toggle-btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px 16px;
+    }
+    
+    /* Adjust font sizes for better readability */
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.2rem; }
+    
+    /* Give more breathing room between elements */
+    .pay-cycle {
+        margin-bottom: 16px;
+    }
+    
+    /* Ensure financial info stays on one line if possible */
+    .financial-info p {
+        margin-right: 10px;
+        white-space: nowrap;
+    }
+    
+    /* Adjust chart container height */
+    .chart-container {
+        height: 300px;
+        width: 100%;
+    }
 }
 
 /* List styles */
@@ -363,16 +305,12 @@ li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    margin-bottom: 4px;
-    border-radius: var(--md-shape-small);
-    background-color: var(--md-surface-variant);
-    color: var(--md-on-surface-variant);
-}
-
-/* Remove hover effect on list items */
-li:hover {
-    background-color: var(--md-surface-variant);
+    padding: 16px;
+    margin-bottom: 8px;
+    border-radius: var(--app-radius-sm);
+    background-color: var(--app-surface);
+    color: var(--app-text);
+    border: 1px solid var(--app-border);
 }
 
 .bill-details {
@@ -389,48 +327,49 @@ li:hover {
 
 .bill-subtext {
     font-size: 0.85rem;
-    color: var(--md-on-surface-variant);
+    color: var(--app-text-secondary);
     margin-top: 4px;
 }
 
 /* Balance indicators */
 .positive-balance {
-    color: var(--md-positive) !important;
+    color: var(--app-positive) !important;
     font-weight: 500;
 }
 
 .negative-balance {
-    color: var(--md-negative) !important;
+    color: var(--app-negative) !important;
     font-weight: 500;
 }
 
 /* Pay cycle styles */
 .pay-cycle {
-    background-color: var(--md-surface);
-    border-radius: var(--md-shape-medium);
+    background-color: var(--app-surface);
+    border-radius: var(--app-radius-md);
     margin-bottom: 16px;
     overflow: hidden;
-    box-shadow: var(--md-elevation-level1);
+    box-shadow: var(--app-shadow);
+    border: 1px solid var(--app-border);
 }
 
 .cycle-header {
-    padding: 16px 24px;
+    padding: 20px;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: var(--md-surface);
-    border-bottom: 1px solid var(--md-surface-variant);
-    transition: background-color 0.2s;
+    background-color: var(--app-surface);
+    border-bottom: 1px solid var(--app-border);
+    transition: var(--app-transition);
 }
 
 .cycle-header:hover {
-    background-color: var(--md-surface-variant);
+    background-color: #f8f9fa;
 }
 
 .cycle-content {
-    padding: 16px 24px;
-    background-color: var(--md-surface);
+    padding: 20px;
+    background-color: var(--app-surface);
 }
 
 .cycle-content.hidden {
@@ -442,35 +381,34 @@ li:hover {
     width: 36px;
     height: 36px;
     min-width: 36px;
-    border-radius: 50%;
-    background-color: var(--md-secondary-container);
-    color: var(--md-on-secondary-container);
+    border-radius: var(--app-radius-circle);
+    background-color: #f1f5f9;
+    color: var(--app-text);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 18px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: var(--app-transition);
     border: none;
     padding: 0;
     margin-left: 8px;
 }
 
 .toggle-btn:hover {
-    background-color: var(--md-secondary);
-    color: var(--md-on-secondary);
+    background-color: #e2e8f0;
 }
 
-/* Control buttons */
+/* Control buttons with the style from the example */
 .control-btn {
-    background-color: var(--md-secondary-container);
-    color: var(--md-on-secondary-container);
+    background-color: #f1f5f9;
+    color: var(--app-text);
     font-size: 0.875rem;
     padding: 8px 16px;
-    border-radius: var(--md-shape-small);
+    border-radius: var(--app-radius-sm);
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: var(--app-transition);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -478,8 +416,7 @@ li:hover {
 }
 
 .control-btn:hover {
-    background-color: var(--md-secondary);
-    color: var(--md-on-secondary);
+    background-color: #e2e8f0;
 }
 
 /* Summary bar */
@@ -497,40 +434,28 @@ li:hover {
 /* Import/Export buttons */
 .data-management {
     display: flex;
-    gap: 12px;
-    margin-top: 24px;
-    justify-content: flex-start;
+    gap: 16px;
+    margin: 24px 0;
 }
 
 .data-btn {
-    background-color: var(--md-primary-container);
-    color: var(--md-on-primary-container);
+    background-color: #f3e8ff;
+    color: #9333ea;
     font-size: 0.875rem;
-    padding: 10px 20px;
-    border-radius: var(--md-shape-small);
+    padding: 12px 20px;
+    border-radius: var(--app-radius-sm);
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s, box-shadow 0.2s;
+    transition: var(--app-transition);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
 }
 
-.data-btn:hover {
-    background-color: var(--md-primary);
-    color: var(--md-on-primary);
-    box-shadow: var(--md-elevation-level1);
-}
-
 .import-btn {
-    background-color: var(--md-secondary-container);
-    color: var(--md-on-secondary-container);
-}
-
-.import-btn:hover {
-    background-color: var(--md-secondary);
-    color: var(--md-on-secondary);
+    background-color: #e0f2fe;
+    color: #0284c7;
 }
 
 #importFileInput {
@@ -545,20 +470,20 @@ li:hover {
 .financial-info p {
     margin: 4px 0;
     font-size: 0.875rem;
-    color: var(--md-on-surface-variant);
+    color: var(--app-text-secondary);
 }
 
 .financial-info p span {
     font-weight: 500;
-    color: var(--md-on-surface);
+    color: var(--app-text);
 }
 
 .financial-info p.positive-balance span {
-    color: green;
+    color: var(--app-positive);
 }
 
 .financial-info p.negative-balance span {
-    color: red;
+    color: var(--app-negative);
 }
 
 h4 {
@@ -566,7 +491,7 @@ h4 {
     justify-content: space-between;
     margin: 16px 0 8px 0;
     padding-bottom: 8px;
-    border-bottom: 1px solid var(--md-surface-variant);
+    border-bottom: 1px solid var(--app-border);
 }
 
 /* Modal styles */
@@ -578,22 +503,23 @@ h4 {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.3);
     overflow: auto;
 }
 
 .modal-content {
-    background-color: var(--md-surface);
+    background-color: var(--app-surface);
     margin: 10% auto;
     padding: 24px;
-    border-radius: var(--md-shape-large);
+    border-radius: var(--app-radius-lg);
     max-width: 500px;
-    box-shadow: var(--md-elevation-level3);
+    box-shadow: var(--app-shadow);
     position: relative;
+    border: 1px solid var(--app-border);
 }
 
 .close {
-    color: var(--md-on-surface-variant);
+    color: var(--app-text-secondary);
     position: absolute;
     top: 16px;
     right: 24px;
@@ -604,7 +530,7 @@ h4 {
 
 .close:hover,
 .close:focus {
-    color: var(--md-on-surface);
+    color: var(--app-text);
 }
 
 .frequency-option {
@@ -621,21 +547,21 @@ h4 {
 .weekday-btn {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
-    border: 1px solid var(--md-outline);
-    background-color: var(--md-surface);
-    color: var(--md-on-surface);
+    border-radius: var(--app-radius-circle);
+    border: 1px solid var(--app-border);
+    background-color: var(--app-surface);
+    color: var(--app-text);
     cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
+    transition: var(--app-transition);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .weekday-btn.selected {
-    background-color: var(--md-primary);
-    color: var(--md-on-primary);
-    border-color: var(--md-primary);
+    background-color: black;
+    color: white;
+    border-color: black;
 }
 
 .modal-buttons {
@@ -651,23 +577,22 @@ h4 {
     top: 16px;
     right: 16px;
     z-index: 100;
-    background-color: var(--md-secondary-container);
-    color: var(--md-on-secondary-container);
-    border: none;
-    border-radius: 50%;
+    background-color: var(--app-surface);
+    color: var(--app-text);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-circle);
     width: 48px;
     height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: var(--md-elevation-level2);
-    transition: background-color 0.2s;
+    box-shadow: var(--app-shadow-sm);
+    transition: var(--app-transition);
 }
 
 .theme-toggle:hover {
-    background-color: var(--md-secondary);
-    color: var(--md-on-secondary);
+    background-color: #f1f5f9;
 }
 
 #themeText {
@@ -676,74 +601,45 @@ h4 {
 
 /* Form group with proper spacing */
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 /* Styles for delete button */
 .delete-btn {
-    background-color: var(--md-error-container);
-    color: var(--md-on-error-container);
-    border-radius: var(--md-shape-small);
+    background-color: #fee2e2;
+    color: var(--app-negative);
+    border-radius: var(--app-radius-sm);
     padding: 6px;
     min-width: 36px;
     height: 36px;
     font-size: 0.75rem;
-    margin-left: 8px;
-    transition: background-color 0.2s;
+    margin-left: 16px;
+    transition: var(--app-transition);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .delete-btn:hover {
-    background-color: var(--md-error);
-    color: var(--md-on-error);
-}
-
-/* Adding button ripple effect */
-button {
-    position: relative;
-    overflow: hidden;
-}
-
-button::after {
-    content: '';
-    display: block;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
-    background-repeat: no-repeat;
-    background-position: 50%;
-    transform: scale(10, 10);
-    opacity: 0;
-    transition: transform .3s, opacity .5s;
-}
-
-button:active::after {
-    transform: scale(0, 0);
-    opacity: .3;
-    transition: 0s;
+    background-color: #fecaca;
 }
 
 /* Snackbar */
 #snackbar {
     visibility: hidden;
     min-width: 250px;
-    background-color: var(--md-secondary);
-    color: var(--md-on-secondary);
+    background-color: var(--app-surface);
+    color: var(--app-text);
     text-align: center;
-    border-radius: var(--md-shape-small);
+    border-radius: var(--app-radius-sm);
     padding: 16px;
     position: fixed;
     z-index: 1001;
     left: 50%;
     bottom: 30px;
     transform: translateX(-50%);
-    box-shadow: var(--md-elevation-level3);
+    box-shadow: var(--app-shadow);
+    border: 1px solid var(--app-border);
 }
 
 #snackbar.show {
@@ -761,5 +657,10 @@ button:active::after {
     to {bottom: 0; opacity: 0;}
 }
 
-/* Google font import for Roboto */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+/* Fix spacing for master bill list */
+#masterList {
+    margin-top: 16px;
+}
+
+/* Google font import for Inter - using the clean, modern font from the example */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
