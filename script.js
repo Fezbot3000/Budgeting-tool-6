@@ -126,50 +126,7 @@ function getLastDayOfMonth(year, month) {
     return new Date(year, month + 1, 0).getDate();
 }
 
-/**
- * Advances a date by a specific number of months while preserving the day of month when possible
- * With special handling for end-of-month cases
- * @param {Date} date - The original date
- * @param {number} months - Number of months to add
- * @param {boolean} preserveEndOfMonth - Whether to always use last day for end-of-month dates
- * @returns {Date} - The new date
- */
-function advanceMonths(date, months, preserveEndOfMonth = false) {
-    const originalDate = new Date(date);
-    const originalDay = originalDate.getDate();
-    const originalMonth = originalDate.getMonth();
-    const originalYear = originalDate.getFullYear();
-    
-    // Calculate target month and year
-    let targetMonth = (originalMonth + months) % 12;
-    let targetYear = originalYear + Math.floor((originalMonth + months) / 12);
-    
-    // Get the last day of the original and target months
-    const originalLastDay = getLastDayOfMonth(originalYear, originalMonth);
-    const targetLastDay = getLastDayOfMonth(targetYear, targetMonth);
-    
-    let targetDay = originalDay;
-    
-    // Special handling for end-of-month cases
-    if (originalDay === originalLastDay || (originalDay === 30 && preserveEndOfMonth)) {
-        // If bill was on the last day of month OR specifically on the 30th with preserve flag
-        targetDay = targetLastDay;
-    } else if (originalDay === 31) {
-        // Always use 31st if available, otherwise last day
-        targetDay = targetLastDay >= 31 ? 31 : targetLastDay;
-    } else if (originalDay === 30) {
-        // Always use 30th if available, otherwise last day
-        targetDay = targetLastDay >= 30 ? 30 : targetLastDay;
-    } else if (originalDay === 29) {
-        // Always use 29th if available, otherwise last day
-        targetDay = targetLastDay >= 29 ? 29 : targetLastDay;
-    } else if (targetDay > targetLastDay) {
-        // For other days, if target day exceeds last day of target month, use last day
-        targetDay = targetLastDay;
-    }
-    
-    return normalizeDate(new Date(targetYear, targetMonth, targetDay));
-}
+
 
 /**
  * Finds the next occurrence of a specific day of the week
@@ -254,32 +211,131 @@ function isDateInRange(date, startDate, endDate) {
 }
 
 /**
- * Calculates the next occurrence of a bill based on its frequency
+ * Determines the date category for a bill based on its original date
+ * @param {Date|string} originalDate - The original date of the bill
+ * @returns {string} - The date category ('day28', 'day29', 'day30', 'day31', or 'normal')
+ */
+function determineDateCategory(originalDate) {
+    // Ensure we have a Date object
+    const date = (typeof originalDate === 'string') 
+        ? new Date(originalDate) 
+        : new Date(originalDate);
+    
+    const day = date.getDate();
+    
+    // Categorize based on day of month
+    if (day === 31) {
+        return 'day31';
+    } else if (day === 30) {
+        return 'day30';
+    } else if (day === 29) {
+        return 'day29';
+    } else if (day === 28) {
+        return 'day28';
+    } else {
+        return 'normal';
+    }
+}
+
+/**
+ * Advances a date by a specific number of months with dedicated handling for each date category
+ * @param {Date} date - The date to advance
+ * @param {number} months - Number of months to add
+ * @param {string} category - The date category ('day28', 'day29', 'day30', 'day31', or 'normal')
+ * @returns {Date} - The new date after advancing
+ */
+function advanceMonthsByCategory(date, months, category) {
+    const originalDate = new Date(date);
+    let targetYear = originalDate.getFullYear();
+    let targetMonth = originalDate.getMonth() + months;
+    
+    // Adjust year based on target month
+    targetYear += Math.floor(targetMonth / 12);
+    targetMonth = targetMonth % 12;
+    
+    // Get the last day of the target month
+    const targetLastDay = new Date(targetYear, targetMonth + 1, 0).getDate();
+    
+    let targetDay;
+    
+    // Apply category-specific rules
+    switch (category) {
+        case 'day31':
+            // Day 31 bills always go to the last day of the month
+            targetDay = targetLastDay;
+            break;
+            
+        case 'day30':
+            // Day 30 bills stay on 30th if possible, otherwise last day
+            targetDay = (targetLastDay >= 30) ? 30 : targetLastDay;
+            break;
+            
+        case 'day29':
+            // Day 29 bills stay on 29th if possible, otherwise last day
+            targetDay = (targetLastDay >= 29) ? 29 : targetLastDay;
+            break;
+            
+        case 'day28':
+            // Day 28 bills always stay on 28th
+            targetDay = 28;
+            break;
+            
+        case 'normal':
+        default:
+            // Normal bills keep their day unless it exceeds the month's length
+            targetDay = Math.min(originalDate.getDate(), targetLastDay);
+            break;
+    }
+    
+    // Create new date with normalized time
+    return normalizeDate(new Date(targetYear, targetMonth, targetDay));
+}
+
+/**
+ * Assigns a date category to a bill and stores it
  * @param {Object} bill - The bill object
+ */
+function categorizeBill(bill) {
+    // Only add category if it doesn't exist
+    if (!bill.dateCategory) {
+        const date = (typeof bill.date === 'string') 
+            ? new Date(bill.date) 
+            : new Date(bill.date);
+        
+        bill.dateCategory = determineDateCategory(date);
+    }
+    
+    return bill;
+}
+
+/**
+ * Calculates the next occurrence of a bill based on its frequency and date category
+ * @param {Object} bill - The bill object (with dateCategory property)
  * @param {Date} currentDate - Current date to calculate from
- * @param {Date} originalBillDate - The original bill date
  * @returns {Date} - Next occurrence date
  */
-function calculateNextBillDate(bill, currentDate, originalBillDate) {
+function calculateNextBillDate(bill, currentDate) {
+    // Ensure the bill has a date category
+    const categorizedBill = categorizeBill(bill);
     const current = new Date(currentDate);
     
-    switch (bill.frequency) {
+    switch (categorizedBill.frequency) {
         case 'Monthly':
-            return advanceMonths(current, 1);
+            return advanceMonthsByCategory(current, 1, categorizedBill.dateCategory);
             
         case 'Fortnightly':
             return advanceDays(current, 14);
             
         case 'Yearly':
-            return advanceYears(current, 1);
+            return advanceMonthsByCategory(current, 12, categorizedBill.dateCategory);
             
         case '6-Monthly':
-            return advanceMonths(current, 6);
+            return advanceMonthsByCategory(current, 6, categorizedBill.dateCategory);
             
         case 'Custom':
-            if (!bill.customFrequency) return null;
+            if (!categorizedBill.customFrequency) return null;
             
-            const cf = bill.customFrequency;
+            const cf = categorizedBill.customFrequency;
             
             if (cf.unit === 'days') {
                 return advanceDays(current, cf.value);
@@ -299,25 +355,99 @@ function calculateNextBillDate(bill, currentDate, originalBillDate) {
                 
                 return nextDate;
             } else if (cf.unit === 'months') {
-                return advanceMonths(current, cf.value);
+                return advanceMonthsByCategory(current, cf.value, categorizedBill.dateCategory);
             } else if (cf.unit === 'years') {
-                return advanceYears(current, cf.value);
+                return advanceMonthsByCategory(current, cf.value * 12, categorizedBill.dateCategory);
             }
             
             return null;
             
         case 'Every 1 weeks on Mo':
-            // Special case for Monday weekly payments
             return getNextDayOfWeek(advanceDays(current, 1), 1); // 1 = Monday
             
         case 'One-Off':
-            // One-off payments don't have a next occurrence
             return null;
             
         default:
-            console.warn(`Unknown frequency: ${bill.frequency}`);
+            console.warn(`Unknown frequency: ${categorizedBill.frequency}`);
             return null;
     }
+}
+
+// Helper method to adjust a date by a number of days
+function advanceDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return normalizeDate(result);
+}
+
+// Helper method to adjust a date by a number of weeks
+function advanceWeeks(date, weeks) {
+    return advanceDays(date, weeks * 7);
+}
+
+// Helper method to normalize a date (remove time components)
+function normalizeDate(date) {
+    const normalized = new Date(date);
+    normalized.setHours(12, 0, 0, 0);
+    return normalized;
+}
+
+// Helper method to get the next occurrence of a specific day of week
+function getNextDayOfWeek(date, dayOfWeek) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + (7 + dayOfWeek - result.getDay()) % 7);
+    return normalizeDate(result);
+}
+
+/**
+ * Generate pay cycles with bills assigned to their correct dates
+ */
+function generatePayCycles() {
+    payCycles = [];
+    let cycleStart = normalizeDate(new Date(payCycleStart));
+    
+    // Initialize master bills with categories
+    masterBills.forEach(categorizeBill);
+    
+    // Generate pay cycles
+    for (let i = 0; i < 29; i++) {
+        // ... [rest of the existing function] ...
+        
+        // When adding bills to cycles, use the categorized calculation
+        let cycleBills = [];
+        
+        // Process each bill
+        masterBills.forEach(bill => {
+            // Parse the original bill date with our consistent formatter
+            let originalBillDate;
+            
+            // ... [existing date parsing logic] ...
+            
+            // For first cycle, start with the original date
+            let currentBillDate = new Date(originalBillDate);
+            
+            // For subsequent cycles, find the right occurrence within this cycle
+            if (i > 0) {
+                // ... [existing logic] ...
+                
+                // Keep advancing the date until we reach or pass the cycle start
+                while (currentBillDate < cycleStart) {
+                    const nextDate = calculateNextBillDate(bill, currentBillDate);
+                    
+                    // ... [existing logic] ...
+                    
+                    currentBillDate = nextDate;
+                }
+            }
+            
+            // ... [rest of the existing function] ...
+        });
+        
+        // ... [rest of the existing function] ...
+    }
+    
+    updatePayCycles();
 }
 
 // Function to create the financial chart
@@ -871,13 +1001,18 @@ function generatePayCycles() {
     payCycles = [];
     let cycleStart = normalizeDate(new Date(payCycleStart));
     
+    // Initialize master bills with categories
+    masterBills.forEach(categorizeBill);
+    
     // Generate pay cycles
     for (let i = 0; i < 29; i++) {
         let cycleEnd;
         
         // Set cycle end date based on frequency
         if (payCycleFrequency === 'Monthly') {
-            cycleEnd = advanceMonths(cycleStart, 1);
+            // For monthly cycles, need to use the categorical approach
+            const category = 'normal'; // Normal day handling for cycle dates
+            cycleEnd = advanceMonthsByCategory(cycleStart, 1, category);
             // Adjust back by 1 day to not overlap with next cycle
             cycleEnd.setDate(cycleEnd.getDate() - 1);
         } else { // Fortnightly
@@ -892,14 +1027,17 @@ function generatePayCycles() {
         
         // Process each bill
         masterBills.forEach(bill => {
+            // Ensure the bill has a category
+            const categorizedBill = categorizeBill(bill);
+            
             // Parse the original bill date with our consistent formatter
             let originalBillDate;
             
             // Check if the date is already in the right format (for bills from master list)
-            if (typeof bill.date === 'string' && bill.date.includes('/')) {
-                originalBillDate = parseFormattedDate(bill.date);
+            if (typeof categorizedBill.date === 'string' && categorizedBill.date.includes('/')) {
+                originalBillDate = parseFormattedDate(categorizedBill.date);
             } else {
-                originalBillDate = normalizeDate(new Date(bill.date));
+                originalBillDate = normalizeDate(new Date(categorizedBill.date));
             }
             
             // For first cycle, start with the original date
@@ -910,22 +1048,19 @@ function generatePayCycles() {
                 // Start with the original date
                 currentBillDate = new Date(originalBillDate);
                 
-                // Get the original day of month for special handling
-                const originalDay = originalBillDate.getDate();
-                const isEndOfMonth = originalDay >= 28;
-                
                 // Keep advancing the date until we reach or pass the cycle start
                 while (currentBillDate < cycleStart) {
-                    const nextDate = calculateNextBillDate(bill, currentBillDate, originalBillDate);
+                    // Use the categorical approach for calculating next date
+                    const nextDate = calculateNextBillDate(categorizedBill, currentBillDate);
                     
                     if (!nextDate) {
                         // Handle one-off bills
-                        if (bill.frequency === 'One-Off') {
+                        if (categorizedBill.frequency === 'One-Off') {
                             // One-off bill should only appear in its specific cycle
                             break;
                         } else {
                             // Unknown frequency or calculation error
-                            console.warn(`Could not calculate next date for bill: ${bill.name}`);
+                            console.warn(`Could not calculate next date for bill: ${categorizedBill.name}`);
                             break;
                         }
                     }
@@ -941,7 +1076,7 @@ function generatePayCycles() {
                 const formattedDate = formatDateForStorage(currentBillDate);
                 
                 cycleBills.push({
-                    ...bill,
+                    ...categorizedBill,
                     date: formattedDate,
                     // Store original day for debugging
                     _originalDay: originalBillDate.getDate()
@@ -949,11 +1084,12 @@ function generatePayCycles() {
             }
             
             // For weekly or fortnightly bills, check for additional occurrences within this cycle
-            if (bill.frequency === 'Fortnightly' || 
-                bill.frequency === 'Every 1 weeks on Mo' || 
-                (bill.frequency === 'Custom' && bill.customFrequency && bill.customFrequency.unit === 'weeks')) {
+            if (categorizedBill.frequency === 'Fortnightly' || 
+                categorizedBill.frequency === 'Every 1 weeks on Mo' || 
+                (categorizedBill.frequency === 'Custom' && categorizedBill.customFrequency && categorizedBill.customFrequency.unit === 'weeks')) {
                 
-                let nextDate = calculateNextBillDate(bill, currentBillDate, originalBillDate);
+                // Use the categorical approach for calculating next date
+                let nextDate = calculateNextBillDate(categorizedBill, currentBillDate);
                 
                 // Keep adding occurrences as long as they fall within this cycle
                 while (nextDate && isDateInRange(nextDate, cycleStart, cycleEnd)) {
@@ -961,13 +1097,13 @@ function generatePayCycles() {
                     
                     // Add this occurrence to the cycle
                     cycleBills.push({
-                        ...bill,
+                        ...categorizedBill,
                         date: formattedNextDate,
                         _originalDay: originalBillDate.getDate()
                     });
                     
-                    // Calculate the next occurrence
-                    nextDate = calculateNextBillDate(bill, nextDate, originalBillDate);
+                    // Calculate the next occurrence using the categorical approach
+                    nextDate = calculateNextBillDate(categorizedBill, nextDate);
                 }
             }
         });
