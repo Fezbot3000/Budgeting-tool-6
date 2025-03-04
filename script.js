@@ -3,6 +3,26 @@ function triggerImportDialog() {
     document.getElementById('importFileInput').click();
 }
 
+// Example of saving data
+function saveData() {
+  localStorage.setItem('billData', JSON.stringify(masterBills));
+  localStorage.setItem('payCycleData', JSON.stringify(payCycles));
+}
+
+// Example of loading data
+function loadData() {
+  const billData = localStorage.getItem('billData');
+  if (billData) {
+    masterBills = JSON.parse(billData);
+  }
+  
+  const cycleData = localStorage.getItem('payCycleData');
+  if (cycleData) {
+    payCycles = JSON.parse(cycleData);
+  }
+}
+
+
 // Import data from a JSON file
 function importData(event) {
     const file = event.target.files[0];
@@ -125,8 +145,6 @@ function parseFormattedDate(dateStr) {
 function getLastDayOfMonth(year, month) {
     return new Date(year, month + 1, 0).getDate();
 }
-
-
 
 /**
  * Finds the next occurrence of a specific day of the week
@@ -374,32 +392,6 @@ function calculateNextBillDate(bill, currentDate) {
     }
 }
 
-// Helper method to adjust a date by a number of days
-function advanceDays(date, days) {
-    const result = new Date(date);
-    result.setDate(result.getDate() + days);
-    return normalizeDate(result);
-}
-
-// Helper method to adjust a date by a number of weeks
-function advanceWeeks(date, weeks) {
-    return advanceDays(date, weeks * 7);
-}
-
-// Helper method to normalize a date (remove time components)
-function normalizeDate(date) {
-    const normalized = new Date(date);
-    normalized.setHours(12, 0, 0, 0);
-    return normalized;
-}
-
-// Helper method to get the next occurrence of a specific day of week
-function getNextDayOfWeek(date, dayOfWeek) {
-    const result = new Date(date);
-    result.setDate(result.getDate() + (7 + dayOfWeek - result.getDay()) % 7);
-    return normalizeDate(result);
-}
-
 /**
  * Generate pay cycles with bills assigned to their correct dates
  */
@@ -412,39 +404,118 @@ function generatePayCycles() {
     
     // Generate pay cycles
     for (let i = 0; i < 29; i++) {
-        // ... [rest of the existing function] ...
+        let cycleEnd;
         
-        // When adding bills to cycles, use the categorized calculation
+        // Set cycle end date based on frequency
+        if (payCycleFrequency === 'Monthly') {
+            // For monthly cycles, need to use the categorical approach
+            const category = 'normal'; // Normal day handling for cycle dates
+            cycleEnd = advanceMonthsByCategory(cycleStart, 1, category);
+            // Adjust back by 1 day to not overlap with next cycle
+            cycleEnd.setDate(cycleEnd.getDate() - 1);
+        } else { // Fortnightly
+            cycleEnd = new Date(cycleStart);
+            cycleEnd.setDate(cycleStart.getDate() + 14 - 1); // -1 to avoid overlap
+        }
+        
+        // Normalize the end date (remove time component)
+        cycleEnd = normalizeDate(cycleEnd);
+        
         let cycleBills = [];
         
         // Process each bill
         masterBills.forEach(bill => {
+            // Ensure the bill has a category
+            const categorizedBill = categorizeBill(bill);
+            
             // Parse the original bill date with our consistent formatter
             let originalBillDate;
             
-            // ... [existing date parsing logic] ...
+            // Check if the date is already in the right format (for bills from master list)
+            if (typeof categorizedBill.date === 'string' && categorizedBill.date.includes('/')) {
+                originalBillDate = parseFormattedDate(categorizedBill.date);
+            } else {
+                originalBillDate = normalizeDate(new Date(categorizedBill.date));
+            }
             
             // For first cycle, start with the original date
             let currentBillDate = new Date(originalBillDate);
             
             // For subsequent cycles, find the right occurrence within this cycle
             if (i > 0) {
-                // ... [existing logic] ...
+                // Start with the original date
+                currentBillDate = new Date(originalBillDate);
                 
                 // Keep advancing the date until we reach or pass the cycle start
                 while (currentBillDate < cycleStart) {
-                    const nextDate = calculateNextBillDate(bill, currentBillDate);
+                    // Use the categorical approach for calculating next date
+                    const nextDate = calculateNextBillDate(categorizedBill, currentBillDate);
                     
-                    // ... [existing logic] ...
+                    if (!nextDate) {
+                        // Handle one-off bills
+                        if (categorizedBill.frequency === 'One-Off') {
+                            // One-off bill should only appear in its specific cycle
+                            break;
+                        } else {
+                            // Unknown frequency or calculation error
+                            console.warn(`Could not calculate next date for bill: ${categorizedBill.name}`);
+                            break;
+                        }
+                    }
                     
                     currentBillDate = nextDate;
                 }
             }
             
-            // ... [rest of the existing function] ...
+            // After finding the right occurrence for this cycle, check if it falls within the cycle
+            // Use inclusive comparison for both start and end dates
+            if (isDateInRange(currentBillDate, cycleStart, cycleEnd)) {
+                // Convert to a format safe for storage with consistent timezone handling
+                const formattedDate = formatDateForStorage(currentBillDate);
+                
+                cycleBills.push({
+                    ...categorizedBill,
+                    date: formattedDate,
+                    // Store original day for debugging
+                    _originalDay: originalBillDate.getDate()
+                });
+            }
+            
+            // For weekly or fortnightly bills, check for additional occurrences within this cycle
+            if (categorizedBill.frequency === 'Fortnightly' || 
+                categorizedBill.frequency === 'Every 1 weeks on Mo' || 
+                (categorizedBill.frequency === 'Custom' && categorizedBill.customFrequency && categorizedBill.customFrequency.unit === 'weeks')) {
+                
+                // Use the categorical approach for calculating next date
+                let nextDate = calculateNextBillDate(categorizedBill, currentBillDate);
+                
+                // Keep adding occurrences as long as they fall within this cycle
+                while (nextDate && isDateInRange(nextDate, cycleStart, cycleEnd)) {
+                    const formattedNextDate = formatDateForStorage(nextDate);
+                    
+                    // Add this occurrence to the cycle
+                    cycleBills.push({
+                        ...categorizedBill,
+                        date: formattedNextDate,
+                        _originalDay: originalBillDate.getDate()
+                    });
+                    
+                    // Calculate the next occurrence using the categorical approach
+                    nextDate = calculateNextBillDate(categorizedBill, nextDate);
+                }
+            }
         });
         
-        // ... [rest of the existing function] ...
+        // Add this cycle to our pay cycles
+        payCycles.push({
+            cycleStart: cycleStart.toDateString(),
+            cycleEnd: cycleEnd.toDateString(),
+            bills: cycleBills,
+            income: payCycleIncome
+        });
+        
+        // Next cycle starts where this one ended plus one day
+        cycleStart = advanceDays(cycleEnd, 1);
     }
     
     updatePayCycles();
@@ -640,31 +711,24 @@ function setupCustomFrequencyModal() {
     });
 }
 
-// Update the toggle button to match the blue style in the screenshots
+// Update the toggle button using CSS classes
 function updateToggleButton(button, isHidden) {
     const iconElem = button.querySelector('.material-icons-round');
     const textElem = button.querySelector('.btn-text');
     
     if (isHidden) {
-        button.style.backgroundColor = '#e1f1fd'; // Light blue background
-        button.style.color = '#0066cc'; // Blue text
         iconElem.textContent = 'visibility';
         textElem.textContent = 'Show List';
     } else {
-        button.style.backgroundColor = '#e1f1fd'; // Light blue background 
-        button.style.color = '#0066cc'; // Blue text
         iconElem.textContent = 'visibility_off';
         textElem.textContent = 'Hide List';
     }
 }
 
-// Update the toggle all cycles button to match the blue style in the screenshots
+// Update the toggle all cycles button
 function updateToggleAllButton(button, isCollapsed) {
     const iconElem = button.querySelector('.material-icons-round');
     const textElem = button.querySelector('.btn-text');
-    
-    button.style.backgroundColor = '#e1f1fd'; // Light blue background
-    button.style.color = '#0066cc'; // Blue text
     
     if (isCollapsed) {
         iconElem.textContent = 'expand_more';
@@ -677,14 +741,8 @@ function updateToggleAllButton(button, isCollapsed) {
 
 // Fix balance colors to ensure they're green/red
 function fixBalanceColors() {
-    // Fix the balance colors in the financial info sections
-    document.querySelectorAll('.financial-info p.positive-balance span').forEach(elem => {
-        elem.style.color = 'green';
-    });
-    
-    document.querySelectorAll('.financial-info p.negative-balance span').forEach(elem => {
-        elem.style.color = 'red';
-    });
+    // Classes already handle this in CSS with positive-balance and negative-balance
+    // No need for inline styles
 }
 
 // Show a temporary snackbar message
@@ -695,45 +753,6 @@ function showSnackbar(message) {
         snackbar = document.createElement('div');
         snackbar.id = 'snackbar';
         document.body.appendChild(snackbar);
-        
-        // Add styles if not in the CSS
-        if (!document.querySelector('style#snackbar-styles')) {
-            const style = document.createElement('style');
-            style.id = 'snackbar-styles';
-            style.textContent = `
-                #snackbar {
-                    visibility: hidden;
-                    min-width: 250px;
-                    background-color: var(--md-secondary);
-                    color: var(--md-on-secondary);
-                    text-align: center;
-                    border-radius: var(--md-shape-small);
-                    padding: 16px;
-                    position: fixed;
-                    z-index: 1001;
-                    left: 50%;
-                    bottom: 30px;
-                    transform: translateX(-50%);
-                    box-shadow: var(--md-elevation-level3);
-                }
-                
-                #snackbar.show {
-                    visibility: visible;
-                    animation: fadein 0.5s, fadeout 0.5s 2.5s;
-                }
-                
-                @keyframes fadein {
-                    from {bottom: 0; opacity: 0;}
-                    to {bottom: 30px; opacity: 1;}
-                }
-                
-                @keyframes fadeout {
-                    from {bottom: 30px; opacity: 1;}
-                    to {bottom: 0; opacity: 0;}
-                }
-            `;
-            document.head.appendChild(style);
-        }
     }
     
     // Set message and show
@@ -816,58 +835,8 @@ window.onload = function() {
         }
     });
     
-    // Style UI elements to match screenshots
-    const exportBtn = document.querySelector('.data-btn:not(.import-btn)');
-    const importBtn = document.querySelector('.import-btn');
-    
-    if (exportBtn) {
-        exportBtn.style.backgroundColor = '#f7e8ff'; // Light purple
-        exportBtn.style.color = '#6200ee'; // Purple
-    }
-    
-    if (importBtn) {
-        importBtn.style.backgroundColor = '#e1f1fd'; // Light blue
-        importBtn.style.color = '#0066cc'; // Blue
-    }
-    
-    // Style the Add Bill button to match the screenshot
-    const addBillBtn = document.querySelector('.add-bill-btn');
-    if (addBillBtn) {
-        addBillBtn.style.backgroundColor = '#006eb8'; // Blue from screenshot
-    }
-    
-    // Apply initial styles to control buttons
-    if (toggleMasterListBtn) {
-        toggleMasterListBtn.style.backgroundColor = '#e1f1fd'; // Light blue background
-        toggleMasterListBtn.style.color = '#0066cc'; // Blue text
-        
-        // Set initial icon and text
-        const iconElem = toggleMasterListBtn.querySelector('.material-icons-round');
-        const textElem = toggleMasterListBtn.querySelector('.btn-text');
-        if (iconElem && textElem) {
-            iconElem.textContent = 'visibility_off';
-            textElem.textContent = 'Hide List';
-        }
-    }
-    
-    if (toggleAllCyclesBtn) {
-        toggleAllCyclesBtn.style.backgroundColor = '#e1f1fd'; // Light blue background
-        toggleAllCyclesBtn.style.color = '#0066cc'; // Blue text
-        
-        // Set initial icon and text
-        const iconElem = toggleAllCyclesBtn.querySelector('.material-icons-round');
-        const textElem = toggleAllCyclesBtn.querySelector('.btn-text');
-        if (iconElem && textElem) {
-            iconElem.textContent = 'expand_less';
-            textElem.textContent = 'Collapse All';
-        }
-    }
-    
     updateMasterList();
     generatePayCycles();
-    
-    // Fix balance colors after a short delay to ensure DOM is updated
-    setTimeout(fixBalanceColors, 100);
     
     // Create financial chart after everything is loaded
     setTimeout(() => {
@@ -954,7 +923,7 @@ function updateMasterList() {
                 <strong>${bill.name}</strong>
                 <div class="bill-subtext">${billDate.toLocaleDateString()} (${frequencyDisplay})</div>
             </span>
-            <span class="bill-amount">$${bill.amount.toFixed(2)}</span>
+            <span class="bill-amount">${bill.amount.toFixed(2)}</span>
         `;
         
         let deleteButton = document.createElement('button');
@@ -996,137 +965,29 @@ function setPayCycle() {
     }
 }
 
-// Generate all upcoming pay cycles
-function generatePayCycles() {
-    payCycles = [];
-    let cycleStart = normalizeDate(new Date(payCycleStart));
-    
-    // Initialize master bills with categories
-    masterBills.forEach(categorizeBill);
-    
-    // Generate pay cycles
-    for (let i = 0; i < 29; i++) {
-        let cycleEnd;
-        
-        // Set cycle end date based on frequency
-        if (payCycleFrequency === 'Monthly') {
-            // For monthly cycles, need to use the categorical approach
-            const category = 'normal'; // Normal day handling for cycle dates
-            cycleEnd = advanceMonthsByCategory(cycleStart, 1, category);
-            // Adjust back by 1 day to not overlap with next cycle
-            cycleEnd.setDate(cycleEnd.getDate() - 1);
-        } else { // Fortnightly
-            cycleEnd = new Date(cycleStart);
-            cycleEnd.setDate(cycleStart.getDate() + 14 - 1); // -1 to avoid overlap
-        }
-        
-        // Normalize the end date (remove time component)
-        cycleEnd = normalizeDate(cycleEnd);
-        
-        let cycleBills = [];
-        
-        // Process each bill
-        masterBills.forEach(bill => {
-            // Ensure the bill has a category
-            const categorizedBill = categorizeBill(bill);
-            
-            // Parse the original bill date with our consistent formatter
-            let originalBillDate;
-            
-            // Check if the date is already in the right format (for bills from master list)
-            if (typeof categorizedBill.date === 'string' && categorizedBill.date.includes('/')) {
-                originalBillDate = parseFormattedDate(categorizedBill.date);
-            } else {
-                originalBillDate = normalizeDate(new Date(categorizedBill.date));
-            }
-            
-            // For first cycle, start with the original date
-            let currentBillDate = new Date(originalBillDate);
-            
-            // For subsequent cycles, find the right occurrence within this cycle
-            if (i > 0) {
-                // Start with the original date
-                currentBillDate = new Date(originalBillDate);
-                
-                // Keep advancing the date until we reach or pass the cycle start
-                while (currentBillDate < cycleStart) {
-                    // Use the categorical approach for calculating next date
-                    const nextDate = calculateNextBillDate(categorizedBill, currentBillDate);
-                    
-                    if (!nextDate) {
-                        // Handle one-off bills
-                        if (categorizedBill.frequency === 'One-Off') {
-                            // One-off bill should only appear in its specific cycle
-                            break;
-                        } else {
-                            // Unknown frequency or calculation error
-                            console.warn(`Could not calculate next date for bill: ${categorizedBill.name}`);
-                            break;
-                        }
-                    }
-                    
-                    currentBillDate = nextDate;
-                }
-            }
-            
-            // After finding the right occurrence for this cycle, check if it falls within the cycle
-            // Use inclusive comparison for both start and end dates
-            if (isDateInRange(currentBillDate, cycleStart, cycleEnd)) {
-                // Convert to a format safe for storage with consistent timezone handling
-                const formattedDate = formatDateForStorage(currentBillDate);
-                
-                cycleBills.push({
-                    ...categorizedBill,
-                    date: formattedDate,
-                    // Store original day for debugging
-                    _originalDay: originalBillDate.getDate()
-                });
-            }
-            
-            // For weekly or fortnightly bills, check for additional occurrences within this cycle
-            if (categorizedBill.frequency === 'Fortnightly' || 
-                categorizedBill.frequency === 'Every 1 weeks on Mo' || 
-                (categorizedBill.frequency === 'Custom' && categorizedBill.customFrequency && categorizedBill.customFrequency.unit === 'weeks')) {
-                
-                // Use the categorical approach for calculating next date
-                let nextDate = calculateNextBillDate(categorizedBill, currentBillDate);
-                
-                // Keep adding occurrences as long as they fall within this cycle
-                while (nextDate && isDateInRange(nextDate, cycleStart, cycleEnd)) {
-                    const formattedNextDate = formatDateForStorage(nextDate);
-                    
-                    // Add this occurrence to the cycle
-                    cycleBills.push({
-                        ...categorizedBill,
-                        date: formattedNextDate,
-                        _originalDay: originalBillDate.getDate()
-                    });
-                    
-                    // Calculate the next occurrence using the categorical approach
-                    nextDate = calculateNextBillDate(categorizedBill, nextDate);
-                }
-            }
-        });
-        
-        // Add this cycle to our pay cycles
-        payCycles.push({
-            cycleStart: cycleStart.toDateString(),
-            cycleEnd: cycleEnd.toDateString(),
-            bills: cycleBills,
-            income: payCycleIncome
-        });
-        
-        // Next cycle starts where this one ended plus one day
-        cycleStart = advanceDays(cycleEnd, 1);
-    }
-    
-    updatePayCycles();
-}
-
 // Update the displayed pay cycles
 function updatePayCycles() {
     let cyclesDiv = document.getElementById("payCycles");
     cyclesDiv.innerHTML = "";
+    
+    // Add controls for past cycles
+    const controlsDiv = document.createElement('div');
+    controlsDiv.className = 'pay-cycles-controls';
+    
+    const togglePastBtn = document.createElement('button');
+    togglePastBtn.id = 'togglePastCycles';
+    togglePastBtn.className = 'control-btn';
+    togglePastBtn.innerHTML = `
+        <span class="material-icons-round">visibility</span>
+        <span class="btn-text">Show Past Cycles</span>
+    `;
+    togglePastBtn.addEventListener('click', function() {
+        const currentState = localStorage.getItem('showPastCycles') === 'true';
+        togglePastPayCycles(!currentState);
+    });
+    
+    controlsDiv.appendChild(togglePastBtn);
+    cyclesDiv.appendChild(controlsDiv);
     
     payCycles.forEach((cycle, index) => {
         // Calculate financial details
@@ -1137,6 +998,10 @@ function updatePayCycles() {
         // Create pay cycle container
         let cycleContainer = document.createElement("div");
         cycleContainer.className = "pay-cycle";
+        
+        // Store cycle dates as data attributes for easy access
+        cycleContainer.dataset.cycleStart = cycle.cycleStart;
+        cycleContainer.dataset.cycleEnd = cycle.cycleEnd;
         
         // Create cycle header
         let cycleHeader = document.createElement("div");
@@ -1154,9 +1019,9 @@ function updatePayCycles() {
         headerContent.innerHTML = `
             <h3>${index + 1} (${formattedStartDate} - ${formattedEndDate})</h3>
             <div class="financial-info">
-                <p>Income: <span>$${cycle.income.toFixed(2)}</span></p>
-                <p>Expenses: <span>$${total.toFixed(2)}</span></p>
-                <p class="${balanceClass}">Balance: <span>$${balance.toFixed(2)}</span></p>
+                <p>Income: <span>${cycle.income.toFixed(2)}</span></p>
+                <p>Expenses: <span>${total.toFixed(2)}</span></p>
+                <p class="${balanceClass}">Balance: <span>${balance.toFixed(2)}</span></p>
             </div>
         `;
         
@@ -1194,7 +1059,7 @@ function updatePayCycles() {
             let groupTotal = groupedBills[group].reduce((sum, bill) => sum + bill.amount, 0);
             
             let groupHeader = document.createElement("h4");
-            groupHeader.innerHTML = `${group} <span>$${groupTotal.toFixed(2)}</span>`;
+            groupHeader.innerHTML = `${group} <span>${groupTotal.toFixed(2)}</span>`;
             cycleContent.appendChild(groupHeader);
             
             let ul = document.createElement("ul");
@@ -1208,7 +1073,7 @@ function updatePayCycles() {
                         <strong>${bill.name}</strong>
                         <div class="bill-subtext">${billDate.toLocaleDateString()}</div>
                     </span>
-                    <span class="bill-amount">$${bill.amount.toFixed(2)}</span>
+                    <span class="bill-amount">${bill.amount.toFixed(2)}</span>
                 `;
                 ul.appendChild(li);
             });
@@ -1250,10 +1115,11 @@ function updatePayCycles() {
         cyclesDiv.appendChild(cycleContainer);
     });
     
-    // Apply fixed colors to balance after cycles are rendered
-    fixBalanceColors();
+    // Apply past cycle visibility based on saved preference
+    const showPastCycles = localStorage.getItem('showPastCycles') === 'true';
+    togglePastPayCycles(showPastCycles);
     
-    // Update financial chart - FIXED THE ERROR IN THIS SECTION
+    // Update financial chart
     if (window.financialChart) {
         try {
             window.financialChart.destroy();
@@ -1305,3 +1171,74 @@ function exportData() {
     
     showSnackbar('Data exported successfully!');
 }
+
+/**
+ * Toggle visibility of past pay cycles
+ * @param {boolean} show - Whether to show or hide past pay cycles
+ */
+function togglePastPayCycles(show) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const payCyclesDiv = document.getElementById("payCycles");
+    const payCycleElements = payCyclesDiv.querySelectorAll('.pay-cycle');
+    
+    // Track if we have past cycles
+    let hasPastCycles = false;
+    
+    payCycleElements.forEach((cycleElement, index) => {
+        // Get the cycle end date from the data attribute we'll add
+        const cycleEndDateStr = cycleElement.dataset.cycleEnd;
+        if (!cycleEndDateStr) return;
+        
+        const cycleEndDate = new Date(cycleEndDateStr);
+        
+        // If this cycle has ended (end date is before today)
+        if (cycleEndDate < today) {
+            hasPastCycles = true;
+            cycleElement.style.display = show ? 'block' : 'none';
+            // Add a visual indicator for past cycles when shown
+            if (show) {
+                cycleElement.classList.add('past-cycle');
+                // Add animation class if needed
+                cycleElement.classList.add('showing');
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    cycleElement.classList.remove('showing');
+                }, 300);
+            } else {
+                cycleElement.classList.remove('past-cycle');
+            }
+        }
+    });
+    
+    // Update button text based on current state
+    const toggleBtn = document.getElementById('togglePastCycles');
+    if (toggleBtn) {
+        const iconElem = toggleBtn.querySelector('.material-icons-round');
+        const textElem = toggleBtn.querySelector('.btn-text');
+        
+        if (show) {
+            iconElem.textContent = 'visibility_off';
+            textElem.textContent = 'Hide Past Cycles';
+        } else {
+            iconElem.textContent = 'visibility';
+            textElem.textContent = 'Show Past Cycles';
+        }
+    }
+    
+    // Show/hide the button based on whether past cycles exist
+    if (toggleBtn) {
+        toggleBtn.style.display = hasPastCycles ? 'flex' : 'none';
+    }
+    
+    // Save the current state
+    localStorage.setItem('showPastCycles', show ? 'true' : 'false');
+}
+
+// Default to hiding past cycles on first load
+document.addEventListener('DOMContentLoaded', function() {
+    if (localStorage.getItem('showPastCycles') === null) {
+        localStorage.setItem('showPastCycles', 'false');
+    }
+});

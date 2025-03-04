@@ -1,98 +1,158 @@
-/* Modern UI Variables */
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 :root {
-    /* Light Theme Colors */
-    --app-primary: #000000;
-    --app-background: #f8f9fa;
-    --app-surface: #ffffff;
-    --app-text: #212529;
-    --app-text-secondary: #6c757d;
-    --app-border: #e9ecef;
-    --app-accent: #0d6efd;
-    --app-positive: #10b981;
-    --app-negative: #ef4444;
-    --app-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    --app-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.02);
-    --app-radius-sm: 8px;
-    --app-radius-md: 12px;
-    --app-radius-lg: 16px;
-    --app-radius-circle: 50%;
-    --app-transition: all 0.2s ease;
-    --app-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    /* Modern color palette inspired by finance app screenshots */
+    --background: #f5f7fa;
+    --surface: #ffffff;
+    --surface-light: #f9fafc;
+    --on-background: #1e2329;
+    --on-surface: #1e2329;
+    --primary: #7b61ff;
+    --primary-light: rgba(123, 97, 255, 0.1);
+    --primary-dark: #6a52e5;
+    --on-primary: #ffffff;
+    --secondary: #f6f6f9;
+    --positive: #00c076;
+    --positive-light: rgba(0, 192, 118, 0.1);
+    --negative: #ff5353;
+    --negative-light: rgba(255, 83, 83, 0.1);
+    --neutral: #808a9d;
+    
+    /* Text colors */
+    --text-primary: #1e2329;
+    --text-secondary: #58667e;
+    --text-hint: #a6b0c3;
+    
+    /* Spacing */
+    --spacing-1: 4px;
+    --spacing-2: 8px;
+    --spacing-3: 12px;
+    --spacing-4: 16px;
+    --spacing-5: 24px;
+    --spacing-6: 32px;
+    
+    /* Border radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-full: 9999px;
+    
+    /* Shadows - simplified */
+    --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+    --shadow-md: 0 2px 8px rgba(16, 24, 40, 0.08);
+    
+    /* Font family variables */
+    --font-primary: 'Inter', 'SF Mono', 'Roboto Mono', monospace;
+    --font-mono: 'Inter', 'SF Mono', 'Roboto Mono', monospace;
 }
 
 /* Dark Theme Colors */
 [data-theme="dark"] {
-    --app-background: #121212;
-    --app-surface: #1e1e1e;
-    --app-text: #e9ecef;
-    --app-text-secondary: #adb5bd;
-    --app-border: #343a40;
-    --app-accent: #3b82f6;
-    --app-positive: #34d399;
-    --app-negative: #f87171;
-    --app-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    --app-shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1);
+    --background: #121212;
+    --surface: #1e1e1e;
+    --surface-light: #292929;
+    --on-background: #e9ecef;
+    --on-surface: #e9ecef;
+    --text-primary: #e9ecef;
+    --text-secondary: #adb5bd;
+    --text-hint: #6c757d;
+    --secondary: #2d2d2d;
+    --positive: #34d399;
+    --negative: #f87171;
+    --primary-light: rgba(123, 97, 255, 0.2);
+    --positive-light: rgba(52, 211, 153, 0.2);
+    --negative-light: rgba(248, 113, 113, 0.2);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
+
+/* Google font import for Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* Base Styles */
 html {
     font-size: 16px;
+    -webkit-text-size-adjust: 100%;
 }
 
 body {
-    font-family: var(--app-font);
-    background-color: var(--app-background);
-    color: var(--app-text);
-    margin: 0;
-    padding: 0;
+    font-family: var(--font-primary);
     line-height: 1.5;
-    transition: var(--app-transition);
-}
-
-/* Layout */
-.container {
+    background-color: var(--background);
+    color: var(--on-background);
     max-width: 800px;
     margin: 0 auto;
-    padding: 20px;
+    padding: var(--spacing-5);
 }
 
+/* Typography */
 h1, h2, h3, h4, h5, h6 {
     margin-top: 0;
-    color: var(--app-text);
+    color: var(--text-primary);
     font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    font-family: var(--font-primary);
+}
+
+h1 {
+    font-size: 1.8rem;
+    margin-bottom: var(--spacing-5);
 }
 
 h2 {
     font-size: 1.5rem;
-    margin-bottom: 24px;
-    padding-bottom: 8px;
+    margin-bottom: var(--spacing-4);
+    font-weight: 600;
 }
 
 h2:not(:first-child) {
-    margin-top: 40px;
+    margin-top: var(--spacing-6);
+}
+
+h3 {
+    font-size: 1.3rem;
+    margin-bottom: var(--spacing-4);
+    font-weight: 600;
+}
+
+h4 {
+    font-size: 1.1rem;
+    display: flex;
+    justify-content: space-between;
+    margin: var(--spacing-4) 0 var(--spacing-2) 0;
+    font-weight: 600;
+    color: var(--negative) !important;
 }
 
 /* Form Elements */
 input, select, textarea {
-    font-family: var(--app-font);
+    font-family: var(--font-primary);
     font-size: 1rem;
-    background-color: var(--app-surface);
-    color: var(--app-text);
-    border: 1px solid var(--app-border);
-    border-radius: var(--app-radius-sm);
-    padding: 12px 16px;
-    margin-bottom: 20px;
-    transition: var(--app-transition);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-3);
+    margin-bottom: var(--spacing-4);
+    transition: border-color 0.2s, box-shadow 0.2s;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
     width: 100%;
     box-sizing: border-box;
+    height: 48px;
 }
 
 /* Add dropdown arrow for select elements */
 select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2358667e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 10px center;
     background-size: 20px;
@@ -101,15 +161,17 @@ select {
 
 input:focus, select:focus, textarea:focus {
     outline: none;
-    border-color: var(--app-accent);
-    box-shadow: 0 0 0 1px var(--app-accent);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(123, 97, 255, 0.2);
 }
 
 label {
     display: block;
-    margin-bottom: 8px;
-    color: var(--app-text-secondary);
+    margin-bottom: var(--spacing-2);
+    color: var(--text-secondary);
     font-weight: 500;
+    font-size: 0.9rem;
+    font-family: var(--font-primary);
 }
 
 .input-with-prefix {
@@ -118,305 +180,265 @@ label {
 
 .input-prefix {
     position: absolute;
-    left: 12px;
+    left: var(--spacing-3);
     top: 50%;
     transform: translateY(-50%);
-    color: var(--app-text-secondary);
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-family: var(--font-primary);
 }
 
 input[type="number"] {
     padding-left: 26px;
 }
 
-/* Buttons */
-button {
-    font-family: var(--app-font);
+/* Simplified Button Styles */
+button, .btn {
+    font-family: var(--font-primary);
     font-size: 0.875rem;
     font-weight: 500;
-    padding: 12px 20px;
-    border-radius: var(--app-radius-sm);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-full);
     border: none;
     cursor: pointer;
-    transition: var(--app-transition);
+    transition: background-color 0.2s, transform 0.2s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    margin-right: 8px;
-    margin-bottom: 8px;
-}
-
-.material-icons-round {
-    font-size: 18px;
-    line-height: 1;
+    gap: var(--spacing-2);
+    height: 48px;
+    min-width: 48px;
 }
 
 /* Primary Button */
-.btn-primary {
-    background-color: var(--app-primary);
-    color: white;
-    box-shadow: var(--app-shadow-sm);
+.btn-primary, .add-bill-btn, .btn-filled {
+    background-color: var(--primary);
+    color: var(--on-primary);
 }
 
-.btn-primary:hover {
-    opacity: 0.9;
-}
-
-/* Set Pay Cycle Button */
-.btn-primary:first-child {
-    background-color: #e2e8f0;
-    color: #0f172a;
-}
-
-/* Add Bill Button */
-.add-bill-btn {
-    background-color: black !important;
-    color: white !important;
-    font-weight: 500;
-    padding: 12px 24px;
-    border-radius: var(--app-radius-sm);
+.btn-primary:hover, .add-bill-btn:hover {
+    background-color: var(--primary-dark);
 }
 
 /* Secondary Button */
-.btn-secondary {
-    background-color: #f1f5f9;
-    color: var(--app-text);
+.btn-secondary, .control-btn, .toggle-btn, .data-btn, .import-btn {
+    background-color: var(--secondary);
+    color: var(--text-primary);
 }
 
-.btn-secondary:hover {
-    background-color: #e2e8f0;
+.btn-secondary:hover, .control-btn:hover, .toggle-btn:hover, .data-btn:hover, .import-btn:hover {
+    background-color: #ecedf1;
 }
 
-/* Outlined Button */
-.btn-outlined {
-    background-color: transparent;
-    color: var(--app-text);
-    border: 1px solid var(--app-border);
+/* Icon Button */
+.icon-btn {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: var(--radius-full);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.btn-outlined:hover {
-    background-color: rgba(0, 0, 0, 0.03);
+/* Delete Button */
+.delete-btn {
+    background-color: var(--negative-light);
+    color: var(--negative);
+    margin-left: var(--spacing-3);
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Text Button */
-.btn-text {
-    background-color: transparent;
-    color: var(--app-accent);
-    padding: 10px 12px;
+.delete-btn:hover {
+    background-color: rgba(255, 83, 83, 0.2);
 }
 
-.btn-text:hover {
-    background-color: rgba(13, 110, 253, 0.05);
-}
-
-/* Cards */
-.card, .section {
-    background-color: var(--app-surface);
-    border-radius: var(--app-radius-md);
-    box-shadow: var(--app-shadow);
+/* Card Styles - Simplified */
+.card, .section, .pay-cycle, .chart-container {
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
     overflow: hidden;
-    margin-bottom: 24px;
-    transition: var(--app-transition);
-    border: 1px solid var(--app-border);
-    padding: 20px;
+    margin-bottom: var(--spacing-5);
+    padding: var(--spacing-5);
 }
 
-.card-header {
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--app-border);
-}
-
-.card-content {
-    padding: 16px 24px;
-}
-
-/* Chart container */
-.chart-container {
-    position: relative;
-    height: 300px;
-    margin-top: 20px;
-    background-color: var(--app-surface);
-    padding: 16px;
-    border-radius: var(--app-radius-md);
-    box-shadow: var(--app-shadow);
-    border: 1px solid var(--app-border);
-}
-
-/* Responsive chart adjustments */
-@media (max-width: 768px) {
-    .chart-container {
-        height: 250px;
-    }
-    .container, .pay-cycle, .cycle-header, .cycle-content, 
-    #masterListContainer, #payCycles, .financial-info {
-        width: 100%;
-        max-width: 100%;
-        padding-left: 16px;
-        padding-right: 16px;
-        margin-left: 0;
-        margin-right: 0;
-        box-sizing: border-box;
-    }
-    
-    /* Adjust main container padding */
-    body, main {
-        padding: 0;
-        margin: 0;
-    }
-    
-    /* Make buttons more touch-friendly */
-    button, .btn, .toggle-btn {
-        min-height: 44px;
-        min-width: 44px;
-        padding: 12px 16px;
-    }
-    
-    /* Adjust font sizes for better readability */
-    h1 { font-size: 1.8rem; }
-    h2 { font-size: 1.5rem; }
-    h3 { font-size: 1.2rem; }
-    
-    /* Give more breathing room between elements */
-    .pay-cycle {
-        margin-bottom: 16px;
-    }
-    
-    /* Ensure financial info stays on one line if possible */
-    .financial-info p {
-        margin-right: 10px;
-        white-space: nowrap;
-    }
-    
-    /* Adjust chart container height */
-    .chart-container {
-        height: 300px;
-        width: 100%;
-    }
-}
-
-/* List styles */
+/* List styles - Simplified */
 ul {
     list-style-type: none;
     padding-left: 0;
     margin: 0;
+    font-family: var(--font-primary);
 }
 
 li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
-    margin-bottom: 8px;
-    border-radius: var(--app-radius-sm);
-    background-color: var(--app-surface);
-    color: var(--app-text);
-    border: 1px solid var(--app-border);
+    margin-bottom: var(--spacing-3);
+    border-radius: var(--radius-md);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    transition: background-color 0.2s;
+    border: none;
+    box-shadow: none;
+    font-family: var(--font-primary);
+}
+
+/* Fix for consistent amount layout in lists */
+li .bill-amount, 
+.financial-info .total-amount {
+    font-family: var(--font-mono);
+    text-align: right;
+}
+
+li:hover {
+    background-color: var(--surface-light);
 }
 
 .bill-details {
     flex-grow: 1;
     text-align: left;
+    font-family: var(--font-primary);
 }
 
 .bill-amount {
     text-align: right;
-    font-weight: 500;
-    padding-left: 16px;
-    min-width: 100px;
+    font-weight: 600;
+    padding-left: var(--spacing-4);
+    min-width: 120px;
+    white-space: nowrap;
+    font-family: var(--font-mono);
 }
 
 .bill-subtext {
     font-size: 0.85rem;
-    color: var(--app-text-secondary);
-    margin-top: 4px;
+    color: var(--text-secondary);
+    margin-top: var(--spacing-1);
+    font-family: var(--font-primary);
 }
 
 /* Balance indicators */
 .positive-balance {
-    color: var(--app-positive) !important;
     font-weight: 500;
+    font-family: var(--font-primary);
+}
+
+.positive-balance span {
+    color: var(--positive) !important;
 }
 
 .negative-balance {
-    color: var(--app-negative) !important;
     font-weight: 500;
+    font-family: var(--font-primary);
 }
 
-/* Pay cycle styles */
+.negative-balance span {
+    color: var(--negative) !important;
+}
+
+/* Pay cycle styles - Simplified */
 .pay-cycle {
-    background-color: var(--app-surface);
-    border-radius: var(--app-radius-md);
-    margin-bottom: 16px;
-    overflow: hidden;
-    box-shadow: var(--app-shadow);
-    border: 1px solid var(--app-border);
+    border: none;
+    box-shadow: var(--shadow-sm);
+    padding: 0;
+}
+
+/* Group totals in pay cycle */
+.group-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-3) var(--spacing-5);
+    background-color: var(--secondary);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--spacing-4);
+    font-weight: 600;
+    font-family: var(--font-primary);
+}
+
+.group-total .amount {
+    font-family: var(--font-mono);
+    text-align: right;
+    padding-right: var(--spacing-2);
 }
 
 .cycle-header {
-    padding: 20px;
+    padding: var(--spacing-5);
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: var(--app-surface);
-    border-bottom: 1px solid var(--app-border);
-    transition: var(--app-transition);
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--secondary);
+    transition: background-color 0.2s;
+    position: relative;
+    font-family: var(--font-primary);
 }
 
 .cycle-header:hover {
-    background-color: #f8f9fa;
+    background-color: var(--surface-light);
 }
 
 .cycle-content {
-    padding: 20px;
-    background-color: var(--app-surface);
+    padding: var(--spacing-5);
+    background-color: var(--surface);
 }
 
 .cycle-content.hidden {
     display: none;
 }
 
-/* Toggle button */
-.toggle-btn {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    border-radius: var(--app-radius-circle);
-    background-color: #f1f5f9;
-    color: var(--app-text);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    cursor: pointer;
-    transition: var(--app-transition);
+/* Chart container - Modernized */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-top: var(--spacing-4);
+    background-color: var(--surface);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
     border: none;
-    padding: 0;
-    margin-left: 8px;
 }
 
-.toggle-btn:hover {
-    background-color: #e2e8f0;
+/* Modern chart styling */
+.chart-container canvas {
+    border-radius: var(--radius-sm);
 }
 
-/* Control buttons with the style from the example */
-.control-btn {
-    background-color: #f1f5f9;
-    color: var(--app-text);
-    font-size: 0.875rem;
-    padding: 8px 16px;
-    border-radius: var(--app-radius-sm);
-    border: none;
-    cursor: pointer;
-    transition: var(--app-transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+/* Modern chart colors */
+:root {
+    --chart-color-1: var(--primary);
+    --chart-color-2: #6ee7b7;
+    --chart-color-3: #93c5fd;
+    --chart-color-4: #c4b5fd;
+    --chart-color-5: #fda4af;
+    --chart-grid: rgba(0, 0, 0, 0.06);
 }
 
-.control-btn:hover {
-    background-color: #e2e8f0;
+[data-theme="dark"] {
+    --chart-grid: rgba(255, 255, 255, 0.1);
+}
+
+/* Settings container layout */
+.settings-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-5);
+}
+
+.pay-cycle-section, .add-bill-section {
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-5);
+    margin-bottom: var(--spacing-5);
+    box-shadow: var(--shadow-sm);
 }
 
 /* Summary bar */
@@ -424,38 +446,23 @@ li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: var(--spacing-4);
+    flex-wrap: wrap;
+    gap: var(--spacing-3);
+    font-family: var(--font-primary);
 }
 
 .summary-bar h2 {
     margin: 0;
+    padding: 0;
 }
 
 /* Import/Export buttons */
 .data-management {
     display: flex;
-    gap: 16px;
-    margin: 24px 0;
-}
-
-.data-btn {
-    background-color: #f3e8ff;
-    color: #9333ea;
-    font-size: 0.875rem;
-    padding: 12px 20px;
-    border-radius: var(--app-radius-sm);
-    border: none;
-    cursor: pointer;
-    transition: var(--app-transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.import-btn {
-    background-color: #e0f2fe;
-    color: #0284c7;
+    gap: var(--spacing-4);
+    margin: var(--spacing-5) 0;
+    flex-wrap: wrap;
 }
 
 #importFileInput {
@@ -464,34 +471,44 @@ li {
 
 /* Financial info */
 .financial-info {
-    margin-top: 8px;
+    margin-top: var(--spacing-3);
+    margin-bottom: var(--spacing-3);
+    font-family: var(--font-primary);
 }
 
 .financial-info p {
-    margin: 4px 0;
-    font-size: 0.875rem;
-    color: var(--app-text-secondary);
+    margin: var(--spacing-2) 0;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    font-family: var(--font-primary);
 }
 
 .financial-info p span {
-    font-weight: 500;
-    color: var(--app-text);
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .financial-info p.positive-balance span {
-    color: var(--app-positive);
+    color: var(--positive);
 }
 
 .financial-info p.negative-balance span {
-    color: var(--app-negative);
+    color: var(--negative);
 }
 
-h4 {
-    display: flex;
-    justify-content: space-between;
-    margin: 16px 0 8px 0;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--app-border);
+/* Balance style in pay cycle summary */
+.balance-amount {
+    font-weight: 600;
+    font-family: var(--font-mono);
+}
+
+.balance-positive {
+    color: var(--positive);
+}
+
+.balance-negative {
+    color: var(--negative);
 }
 
 /* Modal styles */
@@ -503,96 +520,117 @@ h4 {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.3);
     overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+    font-family: var(--font-primary);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modal-content {
-    background-color: var(--app-surface);
-    margin: 10% auto;
-    padding: 24px;
-    border-radius: var(--app-radius-lg);
+    background-color: var(--surface);
+    margin: 15% auto;
+    padding: var(--spacing-5);
+    border-radius: var(--radius-lg);
+    width: 90%;
     max-width: 500px;
-    box-shadow: var(--app-shadow);
     position: relative;
-    border: 1px solid var(--app-border);
+    box-shadow: var(--shadow-md);
+    animation: slideIn 0.3s ease;
+    font-family: var(--font-primary);
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 .close {
-    color: var(--app-text-secondary);
+    color: var(--text-secondary);
     position: absolute;
-    top: 16px;
-    right: 24px;
-    font-size: 28px;
-    font-weight: bold;
+    top: var(--spacing-4);
+    right: var(--spacing-5);
+    font-size: 24px;
+    font-weight: 500;
     cursor: pointer;
+    transition: color 0.2s;
+    font-family: var(--font-primary);
 }
 
 .close:hover,
 .close:focus {
-    color: var(--app-text);
+    color: var(--text-primary);
 }
 
 .frequency-option {
-    margin: 20px 0;
+    margin: var(--spacing-4) 0;
+    font-family: var(--font-primary);
 }
 
 .weekday-buttons {
     display: flex;
-    gap: 8px;
-    margin-top: 12px;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-3);
     flex-wrap: wrap;
 }
 
 .weekday-btn {
     width: 40px;
     height: 40px;
-    border-radius: var(--app-radius-circle);
-    border: 1px solid var(--app-border);
-    background-color: var(--app-surface);
-    color: var(--app-text);
+    border-radius: var(--radius-full);
+    border: 1px solid var(--secondary);
+    background-color: var(--surface);
+    color: var(--text-primary);
     cursor: pointer;
-    transition: var(--app-transition);
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-weight: 500;
+    font-family: var(--font-primary);
 }
 
 .weekday-btn.selected {
-    background-color: black;
-    color: white;
-    border-color: black;
+    background-color: var(--primary);
+    color: var(--on-primary);
+    border-color: var(--primary);
 }
 
 .modal-buttons {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
-    margin-top: 24px;
+    gap: var(--spacing-3);
+    margin-top: var(--spacing-5);
 }
 
 /* Theme Toggle Button */
 .theme-toggle {
     position: fixed;
-    top: 16px;
-    right: 16px;
+    top: var(--spacing-4);
+    right: var(--spacing-4);
     z-index: 100;
-    background-color: var(--app-surface);
-    color: var(--app-text);
-    border: 1px solid var(--app-border);
-    border-radius: var(--app-radius-circle);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    border: none;
+    border-radius: var(--radius-full);
     width: 48px;
     height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: var(--app-shadow-sm);
-    transition: var(--app-transition);
+    box-shadow: var(--shadow-sm);
+    transition: background-color 0.2s, transform 0.2s;
+    font-family: var(--font-primary);
 }
 
 .theme-toggle:hover {
-    background-color: #f1f5f9;
+    background-color: var(--secondary);
 }
 
 #themeText {
@@ -601,45 +639,25 @@ h4 {
 
 /* Form group with proper spacing */
 .form-group {
-    margin-bottom: 20px;
-}
-
-/* Styles for delete button */
-.delete-btn {
-    background-color: #fee2e2;
-    color: var(--app-negative);
-    border-radius: var(--app-radius-sm);
-    padding: 6px;
-    min-width: 36px;
-    height: 36px;
-    font-size: 0.75rem;
-    margin-left: 16px;
-    transition: var(--app-transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.delete-btn:hover {
-    background-color: #fecaca;
+    margin-bottom: var(--spacing-4);
 }
 
 /* Snackbar */
 #snackbar {
     visibility: hidden;
     min-width: 250px;
-    background-color: var(--app-surface);
-    color: var(--app-text);
+    background-color: var(--surface);
+    color: var(--text-primary);
     text-align: center;
-    border-radius: var(--app-radius-sm);
-    padding: 16px;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-4);
     position: fixed;
     z-index: 1001;
     left: 50%;
     bottom: 30px;
     transform: translateX(-50%);
-    box-shadow: var(--app-shadow);
-    border: 1px solid var(--app-border);
+    box-shadow: var(--shadow-md);
+    font-family: var(--font-primary);
 }
 
 #snackbar.show {
@@ -659,8 +677,246 @@ h4 {
 
 /* Fix spacing for master bill list */
 #masterList {
-    margin-top: 16px;
+    margin-top: var(--spacing-4);
 }
 
-/* Google font import for Inter - using the clean, modern font from the example */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* Past cycle indicator styles */
+.past-cycle {
+    position: relative;
+    border-left: 3px solid var(--text-secondary);
+}
+
+.past-cycle::before {
+    content: "Past";
+    position: absolute;
+    top: var(--spacing-4);
+    right: calc(var(--spacing-4) + 40px);
+    background-color: var(--secondary);
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    z-index: 1;
+    font-family: var(--font-primary);
+}
+
+/* Pay cycles controls container */
+.pay-cycles-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--spacing-4);
+}
+
+/* Animation for revealing past cycles */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.past-cycle.showing {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Font declarations for monospace */
+@font-face {
+    font-family: 'SF Mono';
+    src: local('SF Mono'), local('SFMono-Regular');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    body {
+        padding: var(--spacing-3);
+    }
+    
+    .settings-container {
+        grid-template-columns: 1fr;
+    }
+    
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.4rem; }
+    h3 { font-size: 1.2rem; }
+    
+    .pay-cycle {
+        margin-bottom: var(--spacing-4);
+    }
+    
+    .cycle-header, .cycle-content {
+        padding: var(--spacing-4);
+    }
+    
+    .financial-info p {
+        font-size: 1rem;
+        margin: var(--spacing-2) 0;
+    }
+    
+    .financial-info p span {
+        font-size: 1.05rem;
+        font-weight: 600;
+    }
+    
+    li {
+        padding: var(--spacing-3) var(--spacing-4);
+        margin-bottom: var(--spacing-3);
+    }
+    
+    .chart-container {
+        height: 280px;
+    }
+    
+    .modal-content {
+        width: 90%;
+        margin: 20% auto;
+        padding: var(--spacing-4);
+    }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 480px) {
+    .summary-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .cycle-header {
+        position: relative;
+        padding-right: 48px;
+    }
+    
+    .cycle-header h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        width: 100%;
+    }
+    
+    .cycle-header h2 small {
+        display: block;
+        font-size: 0.9rem;
+        margin-top: var(--spacing-1);
+        color: var(--text-secondary);
+        font-weight: normal;
+    }
+    
+    .cycle-header .toggle-btn {
+        position: absolute;
+        right: var(--spacing-4);
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    
+    .financial-info {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-2);
+    }
+    
+    body {
+        overflow-x: hidden;
+    }
+    
+    .data-management {
+        justify-content: space-between;
+    }
+    
+    .data-management button {
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+}
+
+/* Custom indicators for positive/negative values - modern style */
+.percent-change {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+    font-size: 0.875rem;
+    border-radius: var(--radius-full);
+    padding: 2px 8px;
+    font-family: var(--font-primary);
+}
+
+.percent-positive {
+    color: var(--positive);
+    background-color: var(--positive-light);
+}
+
+.percent-negative {
+    color: var(--negative);
+    background-color: var(--negative-light);
+}
+
+/* Card styles for financial stats (like in the screenshots) */
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-4);
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-4);
+    font-family: var(--font-primary);
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-primary);
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-primary);
+}
+
+.stat-change {
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+    font-family: var(--font-primary);
+}
+
+/* Portfolio cards style (from screenshots) */
+.portfolio-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--primary-light);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-3);
+    font-family: var(--font-primary);
+}
+
+.portfolio-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.portfolio-card-details {
+    flex-grow: 1;
+    margin-left: var(--spacing-3);
+    font-family: var(--font-primary);
+}
+
+.portfolio-card-amount {
+    font-weight: 600;
+    text-align: right;
+    font-family: var(--font-mono);
+}

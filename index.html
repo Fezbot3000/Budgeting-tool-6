@@ -12,6 +12,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Link to external CSS file -->
     <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bill Manager">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <!-- Apple touch icons -->
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
 <body>
     <!-- Dark/Light Mode Toggle Button -->
@@ -31,88 +38,93 @@
             </div>
         </div>
         
-        <div class="section">
-            <h2>Set Pay Cycle</h2>
-            <div class="form-group">
-                <label for="payCycleStart">Start Date:</label>
-                <input type='date' id='payCycleStart'>
-            </div>
-            
-            <div class="form-group">
-                <label for="payCycleFrequency">Frequency:</label>
-                <select id='payCycleFrequency'>
-                    <option value='Fortnightly'>Fortnightly</option>
-                    <option value='Monthly'>Monthly</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="payCycleIncome">Income per Pay Cycle:</label>
-                <div class="input-with-prefix">
-                    <span class="input-prefix">$</span>
-                    <input type="number" step="0.01" id="payCycleIncome" placeholder="Enter income amount">
+        <!-- Settings Container - Side by side on desktop, stacked on mobile -->
+        <div class="settings-container">
+            <!-- Set Pay Cycle Section -->
+            <div class="section pay-cycle-section">
+                <h2>Set Pay Cycle</h2>
+                <div class="form-group">
+                    <label for="payCycleStart">Start Date:</label>
+                    <input type='date' id='payCycleStart'>
+                </div>
+                
+                <div class="form-group">
+                    <label for="payCycleFrequency">Frequency:</label>
+                    <select id='payCycleFrequency'>
+                        <option value='Fortnightly'>Fortnightly</option>
+                        <option value='Monthly'>Monthly</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="payCycleIncome">Income per Pay Cycle:</label>
+                    <div class="input-with-prefix">
+                        <span class="input-prefix">$</span>
+                        <input type="number" step="0.01" id="payCycleIncome" placeholder="Enter income amount">
+                    </div>
+                </div>
+                
+                <button class="btn-filled" onclick='setPayCycle()'>Set Pay Cycle</button>
+                
+                <!-- Data Import/Export Section -->
+                <div class="data-management">
+                    <button class="data-btn" onclick="exportData()">
+                        <span class="material-icons-round">download</span> Export Data
+                    </button>
+                    <input type="file" id="importFileInput" accept=".json">
+                    <button class="data-btn import-btn" onclick="triggerImportDialog()">
+                        <span class="material-icons-round">upload</span> Import Data
+                    </button>
                 </div>
             </div>
             
-            <button class="btn-filled" onclick='setPayCycle()'>Set Pay Cycle</button>
-            
-            <!-- Data Import/Export Section -->
-            <div class="data-management">
-                <button class="data-btn" onclick="exportData()">
-                    <span class="material-icons-round">download</span> Export Data
-                </button>
-                <input type="file" id="importFileInput" accept=".json">
-                <button class="data-btn import-btn" onclick="triggerImportDialog()">
-                    <span class="material-icons-round">upload</span> Import Data
-                </button>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h2>Add a New Bill</h2>
-            <div class="form-group">
-                <label for="billName">Name:</label>
-                <input type="text" id="billName">
-            </div>
-            
-            <div class="form-group">
-                <label for="billAmount">Amount:</label>
-                <div class="input-with-prefix">
-                    <span class="input-prefix">$</span>
-                    <input type="number" step="0.01" id="billAmount">
+            <!-- Add a New Bill Section -->
+            <div class="section add-bill-section">
+                <h2>Add a New Bill</h2>
+                <div class="form-group">
+                    <label for="billName">Name:</label>
+                    <input type="text" id="billName">
                 </div>
+                
+                <div class="form-group">
+                    <label for="billAmount">Amount:</label>
+                    <div class="input-with-prefix">
+                        <span class="input-prefix">$</span>
+                        <input type="number" step="0.01" id="billAmount">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="billDate">Date:</label>
+                    <input type="date" id="billDate">
+                </div>
+                
+                <div class="form-group">
+                    <label for="billFrequency">Frequency:</label>
+                    <select id="billFrequency">
+                        <option value="Monthly">Monthly</option>
+                        <option value="Fortnightly">Fortnightly</option>
+                        <option value="One-Off">One-Off</option>
+                        <option value="Yearly">Yearly</option>
+                        <option value="6-Monthly">6-Monthly</option>
+                        <option value="Custom">Custom...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="billGroup">Group:</label>
+                    <select id="billGroup">
+                        <option value="Group 1 - 2Up">Group 1 - 2Up</option>
+                        <option value="Group 2 - Shared Savings">Group 2 - Shared Savings</option>
+                        <option value="Group 3 - Latitude">Group 3 - Latitude</option>
+                        <option value="Group 4 - Cash Bills">Group 4 - Cash Bills</option>
+                    </select>
+                </div>
+                
+                <button class="btn-filled add-bill-btn" onclick="addBill()">
+                    <span class="material-icons-round">add</span> Add Bill
+                </button>
             </div>
-            
-            <div class="form-group">
-                <label for="billDate">Date:</label>
-                <input type="date" id="billDate">
-            </div>
-            
-            <div class="form-group">
-                <label for="billFrequency">Frequency:</label>
-                <select id="billFrequency">
-                    <option value="Monthly">Monthly</option>
-                    <option value="Fortnightly">Fortnightly</option>
-                    <option value="One-Off">One-Off</option>
-                    <option value="Yearly">Yearly</option>
-                    <option value="6-Monthly">6-Monthly</option>
-                    <option value="Custom">Custom...</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="billGroup">Group:</label>
-                <select id="billGroup">
-                    <option value="Group 1 - 2Up">Group 1 - 2Up</option>
-                    <option value="Group 2 - Shared Savings">Group 2 - Shared Savings</option>
-                    <option value="Group 3 - Latitude">Group 3 - Latitude</option>
-                    <option value="Group 4 - Cash Bills">Group 4 - Cash Bills</option>
-                </select>
-            </div>
-            
-            <button class="btn-filled add-bill-btn" onclick="addBill()">
-                <span class="material-icons-round">add</span> Add Bill
-            </button>
         </div>
         
         <div class="section">
@@ -181,5 +193,18 @@
     
     <!-- Link to external JavaScript file -->
     <script src="script.js"></script>
+        <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(error => {
+              console.log('ServiceWorker registration failed: ', error);
+            });
+        });
+      }
+    </script>
 </body>
 </html>
