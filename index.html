@@ -8,9 +8,60 @@
     <link rel="icon" href="data:,">
     <!-- Google Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Link to external CSS file -->
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ['class', '[data-theme="dark"]'],
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'SF Pro', 'system-ui', 'sans-serif'],
+                        mono: ['SF Mono', 'ui-monospace', 'monospace']
+                    },
+                    colors: {
+                        // New modern financial palette
+                        primary: {
+                            light: '#8a70d6', // Main purple/lavender
+                            DEFAULT: '#6b4ce6',
+                            dark: '#5a3dd4'
+                        },
+                        accent: {
+                            green: '#34C759',  // Success/positive values
+                            red: '#ff3b30',    // Danger/negative values
+                            yellow: '#FFCC00', // Warning
+                            orange: '#FF9500'  // Secondary accent
+                        },
+                        // Light mode
+                        light: {
+                            background: '#f8f9fa',
+                            surface: '#FFFFFF',
+                            card: '#FFFFFF',
+                            text: '#1D1D1F',
+                            textSecondary: '#86868B'
+                        },
+                        // Dark mode
+                        dark: {
+                            background: '#121212',
+                            surface: '#1E1E1E',
+                            card: '#252525',
+                            text: '#E5E5E7',
+                            textSecondary: '#AEAEB2'
+                        },
+                        ui: {
+                            divider: '#E5E5EA',
+                            input: '#F2F2F7'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Styles for non-Tailwind elements -->
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,88 +71,88 @@
     <!-- Apple touch icons -->
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
-<body>
+<body class="bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text font-sans transition-colors duration-300">
     <!-- Dark/Light Mode Toggle Button -->
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+    <button id="themeToggle" aria-label="Toggle dark mode" class="fixed top-4 right-4 z-50 w-12 h-12 flex items-center justify-center rounded-full bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text shadow-md transition-all ease-in-out duration-300 hover:scale-105">
         <span id="themeIcon" class="material-icons-round">dark_mode</span>
-        <span id="themeText">Dark Mode</span>
+        <span id="themeText" class="hidden">Dark Mode</span>
     </button>
 
-    <div class="container">
-        <h1>Bill Management System</h1>
+    <div class="container max-w-4xl mx-auto px-4 py-6">
+        <h1 class="text-3xl font-semibold mb-8 tracking-tight">Bill Management System</h1>
         
         <!-- Financial Chart Section -->
-        <div class="section">
-            <h2>Financial Overview</h2>
-            <div class="chart-container">
+        <div class="bg-light-surface dark:bg-dark-surface rounded-xl p-6 mb-6 shadow-md dark:shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 tracking-tight">Financial Overview</h2>
+            <div class="relative h-[300px] mt-4 bg-light-surface/90 dark:bg-dark-card/80 rounded-lg backdrop-blur-md">
                 <canvas id="financialChart"></canvas>
             </div>
         </div>
         
         <!-- Settings Container - Side by side on desktop, stacked on mobile -->
-        <div class="settings-container">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <!-- Set Pay Cycle Section -->
-            <div class="section pay-cycle-section">
-                <h2>Set Pay Cycle</h2>
-                <div class="form-group">
-                    <label for="payCycleStart">Start Date:</label>
-                    <input type='date' id='payCycleStart'>
+            <div class="bg-light-surface dark:bg-dark-surface rounded-xl p-6 shadow-md dark:shadow-lg">
+                <h2 class="text-2xl font-semibold mb-4 tracking-tight">Set Pay Cycle</h2>
+                <div class="mb-4">
+                    <label for="payCycleStart" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Start Date:</label>
+                    <input type='date' id='payCycleStart' class="w-full h-12 px-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                 </div>
                 
-                <div class="form-group">
-                    <label for="payCycleFrequency">Frequency:</label>
-                    <select id='payCycleFrequency'>
+                <div class="mb-4">
+                    <label for="payCycleFrequency" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Frequency:</label>
+                    <select id='payCycleFrequency' class="w-full h-12 px-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-no-repeat bg-right-4 transition-all" style="background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2386868B%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>'); background-position: right 1rem center; background-size: 1rem;">
                         <option value='Fortnightly'>Fortnightly</option>
                         <option value='Monthly'>Monthly</option>
                     </select>
                 </div>
                 
-                <div class="form-group">
-                    <label for="payCycleIncome">Income per Pay Cycle:</label>
-                    <div class="input-with-prefix">
-                        <span class="input-prefix">$</span>
-                        <input type="number" step="0.01" id="payCycleIncome" placeholder="Enter income amount">
+                <div class="mb-4">
+                    <label for="payCycleIncome" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Income per Pay Cycle:</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-light-textSecondary dark:text-dark-textSecondary font-medium">$</span>
+                        <input type="number" step="0.01" id="payCycleIncome" placeholder="Enter income amount" class="w-full h-12 pl-8 pr-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                     </div>
                 </div>
                 
-                <button class="btn-filled" onclick='setPayCycle()'>Set Pay Cycle</button>
+                <button class="h-12 px-6 rounded-xl bg-primary hover:bg-primary-dark text-white font-medium flex items-center justify-center transition-all hover:scale-105 ease-in-out w-full" onclick='setPayCycle()'>Set Pay Cycle</button>
                 
                 <!-- Data Import/Export Section -->
-                <div class="data-management">
-                    <button class="data-btn" onclick="exportData()">
-                        <span class="material-icons-round">download</span> Export Data
+                <div class="flex flex-wrap gap-4 mt-6">
+                    <button class="h-12 px-6 rounded-xl bg-ui-input dark:bg-dark-card text-light-text dark:text-dark-text font-medium flex items-center justify-center transition-all hover:bg-gray-100 dark:hover:bg-dark-surface ease-in-out flex-1" onclick="exportData()">
+                        <span class="material-icons-round mr-2">download</span> Export Data
                     </button>
-                    <input type="file" id="importFileInput" accept=".json">
-                    <button class="data-btn import-btn" onclick="triggerImportDialog()">
-                        <span class="material-icons-round">upload</span> Import Data
+                    <input type="file" id="importFileInput" accept=".json" class="hidden">
+                    <button class="h-12 px-6 rounded-xl bg-ui-input dark:bg-dark-card text-light-text dark:text-dark-text font-medium flex items-center justify-center transition-all hover:bg-gray-100 dark:hover:bg-dark-surface ease-in-out flex-1" onclick="triggerImportDialog()">
+                        <span class="material-icons-round mr-2">upload</span> Import Data
                     </button>
                 </div>
             </div>
             
             <!-- Add a New Bill Section -->
-            <div class="section add-bill-section">
-                <h2>Add a New Bill</h2>
-                <div class="form-group">
-                    <label for="billName">Name:</label>
-                    <input type="text" id="billName">
+            <div class="bg-light-surface dark:bg-dark-surface rounded-xl p-6 shadow-md dark:shadow-lg">
+                <h2 class="text-2xl font-semibold mb-4 tracking-tight">Add a New Bill</h2>
+                <div class="mb-4">
+                    <label for="billName" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Name:</label>
+                    <input type="text" id="billName" class="w-full h-12 px-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                 </div>
                 
-                <div class="form-group">
-                    <label for="billAmount">Amount:</label>
-                    <div class="input-with-prefix">
-                        <span class="input-prefix">$</span>
-                        <input type="number" step="0.01" id="billAmount">
+                <div class="mb-4">
+                    <label for="billAmount" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Amount:</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-light-textSecondary dark:text-dark-textSecondary font-medium">$</span>
+                        <input type="number" step="0.01" id="billAmount" class="w-full h-12 pl-8 pr-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                     </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="billDate">Date:</label>
-                    <input type="date" id="billDate">
+                <div class="mb-4">
+                    <label for="billDate" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Date:</label>
+                    <input type="date" id="billDate" class="w-full h-12 px-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                 </div>
                 
-                <div class="form-group">
-                    <label for="billFrequency">Frequency:</label>
-                    <select id="billFrequency">
+                <div class="mb-4">
+                    <label for="billFrequency" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Frequency:</label>
+                    <select id="billFrequency" class="w-full h-12 px-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-no-repeat bg-right-4 transition-all" style="background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2386868B%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>'); background-position: right 1rem center; background-size: 1rem;">
                         <option value="Monthly">Monthly</option>
                         <option value="Fortnightly">Fortnightly</option>
                         <option value="One-Off">One-Off</option>
@@ -111,9 +162,9 @@
                     </select>
                 </div>
                 
-                <div class="form-group">
-                    <label for="billGroup">Group:</label>
-                    <select id="billGroup">
+                <div class="mb-4">
+                    <label for="billGroup" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Group:</label>
+                    <select id="billGroup" class="w-full h-12 px-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-no-repeat bg-right-4 transition-all" style="background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2386868B%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>'); background-position: right 1rem center; background-size: 1rem;">
                         <option value="Group 1 - 2Up">Group 1 - 2Up</option>
                         <option value="Group 2 - Shared Savings">Group 2 - Shared Savings</option>
                         <option value="Group 3 - Latitude">Group 3 - Latitude</option>
@@ -121,30 +172,58 @@
                     </select>
                 </div>
                 
-                <button class="btn-filled add-bill-btn" onclick="addBill()">
-                    <span class="material-icons-round">add</span> Add Bill
+                <button class="h-12 px-6 rounded-xl bg-primary hover:bg-primary-dark text-white font-medium flex items-center justify-center transition-all hover:scale-105 ease-in-out w-full add-bill-btn" onclick="addBill()">
+                    <span class="material-icons-round mr-2">add</span> Add Bill
                 </button>
             </div>
         </div>
-        
-        <div class="section">
-            <div class="summary-bar">
-                <h2>Master Bill List</h2>
-                <button class="control-btn" id="toggleMasterList">
-                    <span class="material-icons-round">visibility_off</span>
+        <div class="bg-light-surface dark:bg-dark-surface rounded-xl p-6 mb-6 shadow-md dark:shadow-lg">
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+                <h2 class="text-2xl font-semibold tracking-tight m-0 p-0">Manage Groups</h2>
+                <button class="h-10 px-4 rounded-xl bg-ui-input dark:bg-dark-card text-light-text dark:text-dark-text font-medium flex items-center justify-center transition-all hover:bg-gray-100 dark:hover:bg-dark-surface ease-in-out" id="addGroupBtn">
+                    <span class="material-icons-round mr-2">add_circle</span>
+                    <span>Add Group</span>
+                </button>
+            </div>
+            <div class="mt-4">
+                <ul id="groupList" class="space-y-2"></ul>
+            </div>
+        </div>
+        <div id="groupEditModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center transition-opacity duration-300">
+            <div class="bg-light-surface dark:bg-dark-surface rounded-2xl p-6 w-11/12 max-w-md mx-auto relative shadow-lg transition-transform duration-300 ease-in-out">
+                <span class="absolute top-4 right-5 text-2xl font-medium text-light-textSecondary hover:text-light-text dark:hover:text-dark-text cursor-pointer close">&times;</span>
+                <h2 class="text-2xl font-semibold mb-4 tracking-tight" id="groupModalTitle">Edit Group</h2>
+                
+                <div class="mb-4">
+                    <label for="groupName" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Group Name:</label>
+                    <input type="text" id="groupName" class="w-full h-12 px-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                    <input type="hidden" id="groupOldName" value="">
+                </div>
+                
+                <div class="flex justify-end gap-3 mt-6">
+                    <button class="h-10 px-6 rounded-xl bg-transparent text-light-textSecondary dark:text-dark-textSecondary font-medium transition-all hover:underline" id="cancelGroupEdit">Cancel</button>
+                    <button class="h-10 px-6 rounded-xl bg-primary hover:bg-primary-dark text-white font-medium transition-all hover:scale-105 ease-in-out" id="saveGroupEdit">Save</button>
+                </div>
+            </div>
+        </div>
+        <div class="bg-light-surface dark:bg-dark-surface rounded-xl p-6 mb-6 shadow-md dark:shadow-lg">
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+                <h2 class="text-2xl font-semibold tracking-tight m-0 p-0">Master Bill List</h2>
+                <button class="h-10 px-4 rounded-xl bg-ui-input dark:bg-dark-card text-light-text dark:text-dark-text font-medium flex items-center justify-center transition-all hover:bg-gray-100 dark:hover:bg-dark-surface ease-in-out control-btn" id="toggleMasterList">
+                    <span class="material-icons-round mr-2">visibility_off</span>
                     <span class="btn-text">Hide List</span>
                 </button>
             </div>
-            <div id="masterListContainer">
-                <ul id="masterList"></ul>
+            <div id="masterListContainer" class="mt-4">
+                <ul id="masterList" class="space-y-2"></ul>
             </div>
         </div>
         
-        <div class="section">
-            <div class="summary-bar">
-                <h2>Upcoming Pay Cycles</h2>
-                <button class="control-btn" id="toggleAllCycles">
-                    <span class="material-icons-round">unfold_less</span>
+        <div class="bg-light-surface dark:bg-dark-surface rounded-xl p-6 mb-6 shadow-md dark:shadow-lg">
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+                <h2 class="text-2xl font-semibold tracking-tight m-0 p-0">Upcoming Pay Cycles</h2>
+                <button class="h-10 px-4 rounded-xl bg-ui-input dark:bg-dark-card text-light-text dark:text-dark-text font-medium flex items-center justify-center transition-all hover:bg-gray-100 dark:hover:bg-dark-surface ease-in-out control-btn" id="toggleAllCycles">
+                    <span class="material-icons-round mr-2">unfold_less</span>
                     <span class="btn-text">Collapse All</span>
                 </button>
             </div>
@@ -153,16 +232,16 @@
     </div>
     
     <!-- Custom Frequency Modal -->
-    <div id="customFrequencyModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Custom Frequency</h2>
+    <div id="customFrequencyModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center transition-opacity duration-300">
+        <div class="bg-light-surface dark:bg-dark-surface rounded-2xl p-6 w-11/12 max-w-md mx-auto relative shadow-lg transition-transform duration-300 ease-in-out">
+            <span class="absolute top-4 right-5 text-2xl font-medium text-light-textSecondary hover:text-light-text dark:hover:text-dark-text cursor-pointer close">&times;</span>
+            <h2 class="text-2xl font-semibold mb-4 tracking-tight">Custom Frequency</h2>
             
-            <div class="frequency-option">
-                <label for="customFrequencyValue">Repeat every:</label>
-                <div class="frequency-inputs">
-                    <input type="number" id="customFrequencyValue" min="1" value="1">
-                    <select id="customFrequencyUnit">
+            <div class="mb-4">
+                <label for="customFrequencyValue" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Repeat every:</label>
+                <div class="flex gap-2">
+                    <input type="number" id="customFrequencyValue" min="1" value="1" class="w-24 h-12 px-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                    <select id="customFrequencyUnit" class="flex-1 h-12 px-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-no-repeat bg-right-4 transition-all" style="background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2386868B%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>'); background-position: right 1rem center; background-size: 1rem;">
                         <option value="days">Day(s)</option>
                         <option value="weeks">Week(s)</option>
                         <option value="months">Month(s)</option>
@@ -171,29 +250,32 @@
                 </div>
             </div>
             
-            <div class="frequency-option" id="weekdaySelector" style="display:none;">
-                <label>On:</label>
-                <div class="weekday-buttons">
-                    <button type="button" class="weekday-btn" data-day="0">Su</button>
-                    <button type="button" class="weekday-btn" data-day="1">Mo</button>
-                    <button type="button" class="weekday-btn" data-day="2">Tu</button>
-                    <button type="button" class="weekday-btn" data-day="3">We</button>
-                    <button type="button" class="weekday-btn" data-day="4">Th</button>
-                    <button type="button" class="weekday-btn" data-day="5">Fr</button>
-                    <button type="button" class="weekday-btn" data-day="6">Sa</button>
+            <div class="mb-4 hidden" id="weekdaySelector">
+                <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">On:</label>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" class="w-10 h-10 rounded-full border border-ui-divider dark:border-dark-card bg-light-surface dark:bg-dark-surface flex items-center justify-center text-sm font-medium transition-all weekday-btn" data-day="0">Su</button>
+                    <button type="button" class="w-10 h-10 rounded-full border border-ui-divider dark:border-dark-card bg-light-surface dark:bg-dark-surface flex items-center justify-center text-sm font-medium transition-all weekday-btn" data-day="1">Mo</button>
+                    <button type="button" class="w-10 h-10 rounded-full border border-ui-divider dark:border-dark-card bg-light-surface dark:bg-dark-surface flex items-center justify-center text-sm font-medium transition-all weekday-btn" data-day="2">Tu</button>
+                    <button type="button" class="w-10 h-10 rounded-full border border-ui-divider dark:border-dark-card bg-light-surface dark:bg-dark-surface flex items-center justify-center text-sm font-medium transition-all weekday-btn" data-day="3">We</button>
+                    <button type="button" class="w-10 h-10 rounded-full border border-ui-divider dark:border-dark-card bg-light-surface dark:bg-dark-surface flex items-center justify-center text-sm font-medium transition-all weekday-btn" data-day="4">Th</button>
+                    <button type="button" class="w-10 h-10 rounded-full border border-ui-divider dark:border-dark-card bg-light-surface dark:bg-dark-surface flex items-center justify-center text-sm font-medium transition-all weekday-btn" data-day="5">Fr</button>
+                    <button type="button" class="w-10 h-10 rounded-full border border-ui-divider dark:border-dark-card bg-light-surface dark:bg-dark-surface flex items-center justify-center text-sm font-medium transition-all weekday-btn" data-day="6">Sa</button>
                 </div>
             </div>
             
-            <div class="modal-buttons">
-                <button class="btn-text" id="cancelCustomFrequency">Cancel</button>
-                <button class="btn-filled" id="saveCustomFrequency">Save</button>
+            <div class="flex justify-end gap-3 mt-6">
+                <button class="h-10 px-6 rounded-xl bg-transparent text-light-textSecondary dark:text-dark-textSecondary font-medium transition-all hover:underline" id="cancelCustomFrequency">Cancel</button>
+                <button class="h-10 px-6 rounded-xl bg-primary hover:bg-primary-dark text-white font-medium transition-all hover:scale-105 ease-in-out" id="saveCustomFrequency">Save</button>
             </div>
         </div>
     </div>
     
+    <!-- Snackbar -->
+    <div id="snackbar" class="fixed left-1/2 -translate-x-1/2 bottom-8 min-w-[250px] p-4 rounded-lg bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text shadow-lg text-center z-50 hidden"></div>
+    
     <!-- Link to external JavaScript file -->
     <script src="script.js"></script>
-        <script>
+    <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/service-worker.js')
