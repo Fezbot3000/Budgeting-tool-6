@@ -270,6 +270,57 @@
         </div>
     </div>
     
+    <!-- Edit Bill Modal -->
+    <div id="editBillModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center transition-opacity duration-300">
+        <div class="bg-light-surface dark:bg-dark-surface rounded-2xl p-6 w-11/12 max-w-md mx-auto relative shadow-lg transition-transform duration-300 ease-in-out">
+            <span class="absolute top-4 right-5 text-2xl font-medium text-light-textSecondary hover:text-light-text dark:hover:text-dark-text cursor-pointer close">&times;</span>
+            <h2 class="text-2xl font-semibold mb-4 tracking-tight">Edit Bill</h2>
+            
+            <div class="mb-4">
+                <label for="editBillName" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Name:</label>
+                <input type="text" id="editBillName" class="w-full h-12 px-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+            
+            <div class="mb-4">
+                <label for="editBillAmount" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Amount:</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-light-textSecondary dark:text-dark-textSecondary font-medium">$</span>
+                    <input type="number" step="0.01" id="editBillAmount" class="w-full h-12 pl-8 pr-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="editBillDate" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Date:</label>
+                <input type="date" id="editBillDate" class="w-full h-12 px-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+            
+            <div class="mb-4">
+                <label for="editBillFrequency" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Frequency:</label>
+                <select id="editBillFrequency" class="w-full h-12 px-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-no-repeat bg-right-4 transition-all" style="background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2386868B%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>'); background-position: right 1rem center; background-size: 1rem;">
+                    <option value="Monthly">Monthly</option>
+                    <option value="Fortnightly">Fortnightly</option>
+                    <option value="One-Off">One-Off</option>
+                    <option value="Yearly">Yearly</option>
+                    <option value="6-Monthly">6-Monthly</option>
+                    <option value="Custom">Custom...</option>
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <label for="editBillGroup" class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-2">Group:</label>
+                <select id="editBillGroup" class="w-full h-12 px-4 rounded-lg border border-ui-divider dark:border-dark-card bg-ui-input dark:bg-dark-card backdrop-blur-md text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-no-repeat bg-right-4 transition-all" style="background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2386868B%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>'); background-position: right 1rem center; background-size: 1rem;">
+                </select>
+            </div>
+            
+            <input type="hidden" id="editBillIndex" value="">
+            
+            <div class="flex justify-end gap-3 mt-6">
+                <button class="h-10 px-6 rounded-xl bg-transparent text-light-textSecondary dark:text-dark-textSecondary font-medium transition-all hover:underline" id="cancelEditBill">Cancel</button>
+                <button class="h-10 px-6 rounded-xl bg-primary hover:bg-primary-dark text-white font-medium transition-all hover:scale-105 ease-in-out" id="saveEditBill">Save</button>
+            </div>
+        </div>
+    </div>
+    
     <!-- Snackbar -->
     <div id="snackbar" class="fixed left-1/2 -translate-x-1/2 bottom-8 min-w-[250px] p-4 rounded-lg bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text shadow-lg text-center z-50 hidden"></div>
     

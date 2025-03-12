@@ -705,11 +705,27 @@ function updateMasterList() {
             <span class="text-right font-semibold font-mono whitespace-nowrap pl-4 min-w-[120px]">${bill.amount.toFixed(2)}</span>
         `;
         
+        // Create buttons container
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'flex items-center ml-3';
+        
+        // Add edit button
+        let editButton = document.createElement('button');
+        editButton.className = 'w-10 h-10 flex items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary hover:bg-primary/20 transition-colors mr-2';
+        editButton.innerHTML = '<span class="material-icons-round">edit</span>';
+        editButton.setAttribute('aria-label', 'Edit bill');
+        editButton.onclick = function(e) {
+            e.stopPropagation();
+            editBill(index);
+        };
+        
+        // Add delete button
         let deleteButton = document.createElement('button');
-        deleteButton.className = 'ml-3 w-10 h-10 flex items-center justify-center rounded-full bg-accent-red/10 text-accent-red dark:bg-accent-red/20 dark:text-accent-red hover:bg-accent-red/20 transition-colors';
+        deleteButton.className = 'w-10 h-10 flex items-center justify-center rounded-full bg-accent-red/10 text-accent-red dark:bg-accent-red/20 dark:text-accent-red hover:bg-accent-red/20 transition-colors';
         deleteButton.innerHTML = '<span class="material-icons-round">delete</span>';
         deleteButton.setAttribute('aria-label', 'Delete bill');
-        deleteButton.onclick = function() {
+        deleteButton.onclick = function(e) {
+            e.stopPropagation();
             if (confirm(`Are you sure you want to delete "${bill.name}"?`)) {
                 masterBills.splice(index, 1);
                 localStorage.setItem('billData', JSON.stringify(masterBills));
@@ -719,9 +735,117 @@ function updateMasterList() {
             }
         };
         
-        li.appendChild(deleteButton);
+        // Add buttons to container
+        buttonsContainer.appendChild(editButton);
+        buttonsContainer.appendChild(deleteButton);
+        
+        // Add buttons container to list item
+        li.appendChild(buttonsContainer);
         list.appendChild(li);
     });
+}
+
+// Function to open the edit bill modal
+function editBill(index) {
+    const bill = masterBills[index];
+    const modal = document.getElementById('editBillModal');
+    
+    if (!modal) return; // Exit if element doesn't exist
+    
+    // Update the edit group dropdown
+    updateEditGroupDropdown();
+    
+    // Fill in the form fields with current bill data
+    document.getElementById('editBillName').value = bill.name;
+    document.getElementById('editBillAmount').value = bill.amount;
+    
+    // Format date for the date input (YYYY-MM-DD)
+    let billDate;
+    if (typeof bill.date === 'string' && bill.date.includes('/')) {
+        // Handle DD/MM/YYYY format
+        const [day, month, year] = bill.date.split('/').map(Number);
+        billDate = new Date(year, month - 1, day);
+    } else {
+        // Handle ISO format YYYY-MM-DD
+        billDate = new Date(bill.date + 'T12:00:00Z');
+    }
+    document.getElementById('editBillDate').value = billDate.toISOString().slice(0, 10);
+    
+    document.getElementById('editBillFrequency').value = bill.frequency;
+    document.getElementById('editBillGroup').value = bill.group;
+    document.getElementById('editBillIndex').value = index;
+    
+    // Show the modal
+    modal.style.display = 'flex';
+}
+
+// Function to update the group dropdown in the edit bill modal
+function updateEditGroupDropdown() {
+    const groupSelect = document.getElementById('editBillGroup');
+    groupSelect.innerHTML = '';
+    
+    groups.forEach(group => {
+        const option = document.createElement('option');
+        option.value = group;
+        option.textContent = group;
+        groupSelect.appendChild(option);
+    });
+}
+
+// Function to save the edited bill
+function saveEditBill() {
+    const name = document.getElementById('editBillName').value.trim();
+    const amount = parseFloat(document.getElementById('editBillAmount').value);
+    const date = document.getElementById('editBillDate').value;
+    const frequency = document.getElementById('editBillFrequency').value;
+    const group = document.getElementById('editBillGroup').value;
+    const index = parseInt(document.getElementById('editBillIndex').value);
+    
+    if (!name || isNaN(amount) || !date || !frequency || !group || isNaN(index)) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    // Keep any custom frequency settings if frequency is still Custom
+    let customFrequency = null;
+    if (frequency === 'Custom' && masterBills[index].customFrequency) {
+        customFrequency = masterBills[index].customFrequency;
+    }
+    
+    // Update the bill
+    masterBills[index] = {
+        name,
+        amount,
+        date,
+        frequency,
+        group,
+        dateCategory: determineDateCategory(date)
+    };
+    
+    // Add custom frequency if applicable
+    if (customFrequency) {
+        masterBills[index].customFrequency = customFrequency;
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('billData', JSON.stringify(masterBills));
+    
+    // Update UI
+    updateMasterList();
+    generatePayCycles();
+    
+    // Close the modal
+    closeEditBillModal();
+    
+    showSnackbar('Bill updated successfully');
+}
+
+// Function to close the edit bill modal
+function closeEditBillModal() {
+    const modal = document.getElementById('editBillModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 // Set the pay cycle parameters
@@ -1360,6 +1484,23 @@ window.onload = function() {
     loadGroups();
     updateGroupDropdown();
     updateGroupList();
+    
+    // Set up the edit bill modal event listeners
+    document.getElementById('saveEditBill').addEventListener('click', saveEditBill);
+    document.getElementById('cancelEditBill').addEventListener('click', closeEditBillModal);
+    document.querySelector('#editBillModal .close').addEventListener('click', closeEditBillModal);
+    document.getElementById('editBillModal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeEditBillModal();
+        }
+    });
+
+    // Set up edit bill frequency change
+    document.getElementById('editBillFrequency').addEventListener('change', function() {
+        if (this.value === 'Custom') {
+            document.getElementById('customFrequencyModal').style.display = 'flex';
+        }
+    });
     
     // Set up group management event listeners
     document.getElementById('addGroupBtn').addEventListener('click', function() {
