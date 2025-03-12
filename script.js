@@ -1,5 +1,6 @@
-// PART 1
-// Initialize variables and load data from local storage
+// PART 1: Initialization and Data Management
+
+// Global variables and state management
 let masterBills = [];
 let payCycles = [];
 let payCycleStart = new Date();
@@ -29,6 +30,33 @@ function loadData() {
   const billData = localStorage.getItem('billData');
   if (billData) {
     masterBills = JSON.parse(billData);
+    
+    // Ensure each bill has an id
+    masterBills.forEach(bill => {
+      if (!bill.id) {
+        bill.id = `bill-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      }
+      // Initialize paid status if not present
+      if (bill.paid === undefined) {
+        bill.paid = false;
+      }
+    });
+    const cycleData = localStorage.getItem('payCycleData');
+    if (cycleData) {
+        payCycles = JSON.parse(cycleData);
+        
+        // Ensure all bill objects have a paid property
+        payCycles.forEach(cycle => {
+            if (cycle.bills) {
+                cycle.bills.forEach(bill => {
+                    // Initialize paid status if not present
+                    if (bill.paid === undefined) {
+                        bill.paid = false;
+                    }
+                });
+            }
+        });
+    }
   }
   
   const cycleData = localStorage.getItem('payCycleData');
@@ -631,7 +659,205 @@ function calculateNextBillDate(bill, currentDate) {
     }
 }
 
-// PART 3 
+// PART 3: UI Interaction and Rendering
+
+/**
+ * Format date to match the specific design requirements
+ * @param {Date} date - Date to format
+ * @returns {string} Formatted date string
+ */
+function formatPeriodDate(date) {
+    return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    });
+}
+
+/**
+ * Toggle the paid status of a bill
+ * @param {string} billId - The ID of the bill to toggle
+ */
+function toggleBillPaid(billId) {
+    // Find the bill in the pay cycles
+    for (let i = 0; i < payCycles.length; i++) {
+        const cycle = payCycles[i];
+        for (let j = 0; j < cycle.bills.length; j++) {
+            const bill = cycle.bills[j];
+            const currentBillId = bill.id || `cycle-${i}-bill-${bill.name}-${bill.date}`;
+            
+            if (currentBillId === billId) {
+                // Toggle the paid status
+                bill.paid = !bill.paid;
+                
+                // Update the UI
+                const billElement = document.querySelector(`[data-bill-id="${billId}"]`);
+                if (billElement) {
+                    billElement.classList.toggle('bill-paid');
+                }
+                
+                // Save the updated payCycles to localStorage
+                localStorage.setItem('payCycleData', JSON.stringify(payCycles));
+                return;
+            }
+        }
+    }
+}
+
+/**
+ * Render transactions for a specific billing period
+ * @param {Array} transactions - List of transactions
+ * @returns {string} HTML string of transactions
+ */
+function renderTransactions(transactions) {
+    if (!transactions || transactions.length === 0) {
+        return `
+            <tr>
+                <td colspan="4" class="text-center text-light-textSecondary dark:text-dark-textSecondary py-4">
+                    No transactions
+                </td>
+            </tr>
+        `;
+    }
+
+    return transactions.map(transaction => {
+        const transactionDate = new Date(transaction.date);
+        const formattedDate = transactionDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        // Determine color and sign based on transaction type
+        const isRepayment = transaction.type === 'repayment';
+        const amountClass = isRepayment ? 'text-accent-green' : 'text-accent-red';
+        const amountSign = isRepayment ? '-' : '';
+
+        return `
+            <tr>
+                <td>${formattedDate}</td>
+                <td>${transaction.description}</td>
+                <td class="${amountClass} text-right">
+                    ${amountSign}$${Math.abs(transaction.amount).toFixed(2)}
+                </td>
+                <td class="text-right">
+                    <button class="delete-transaction text-accent-red hover:bg-accent-red/10 rounded-full w-6 h-6 flex items-center justify-center">
+                        <span class="material-icons-round text-base">close</span>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+/**
+ * Render billing periods to the UI
+ */
+function renderBillingPeriods() {
+    const container = document.getElementById('billingPeriodsList');
+    container.innerHTML = ''; // Clear existing content
+    
+    // Load the latest billing periods
+    billingPeriods = loadBillingPeriods();
+    
+    // Sort periods by start date (newest first)
+    const sortedPeriods = billingPeriods.sort((a, b) => 
+        new Date(b.startDate) - new Date(a.startDate)
+    );
+    
+    sortedPeriods.forEach((period, index) => {
+        // Calculate financial details
+        const startDate = new Date(period.startDate);
+        const endDate = new Date(period.endDate);
+        const interestFreeEndDate = new Date(period.interestFreeEndDate);
+        const remainingDays = calculateRemainingDays(period);
+        const totalOwing = calculateTotalTransactions(period);
+        
+        const periodElement = document.createElement('div');
+        periodElement.classList.add(
+            'bg-light-surface', 
+            'dark:bg-dark-surface', 
+            'rounded-xl', 
+            'p-6', 
+            'shadow-md',
+            'dark:shadow-lg',
+            'mb-6'
+        );
+        
+        periodElement.innerHTML = `
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">
+                    Billing Period ${index + 1}: 
+                    ${formatPeriodDate(startDate)} - ${formatPeriodDate(endDate)}
+                    <button class="ml-2 edit-period hover:bg-ui-input dark:hover:bg-dark-card rounded-full p-1">
+                        <span class="material-icons-round text-base">edit</span>
+                    </button>
+                </h2>
+                <span class="text-sm ${remainingDays > 0 ? 'text-accent-green' : 'text-accent-red'}">
+                    ${remainingDays > 0 ? 'Active' : 'Expired'}
+                </span>
+            </div>
+            
+            <div class="bg-light-surface/50 dark:bg-dark-surface/50 rounded-lg p-4 mb-4">
+                <p class="text-light-textSecondary dark:text-dark-textSecondary">
+                    Interest-free until: ${formatPeriodDate(interestFreeEndDate)} 
+                    (${period.interestFreeDays || 'undefined'} days)
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                    <p class="text-sm text-light-textSecondary dark:text-dark-textSecondary">Days Remaining</p>
+                    <p class="font-semibold">${remainingDays}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-light-textSecondary dark:text-dark-textSecondary">Interest-Free Period</p>
+                    <p class="font-semibold">${period.interestFreeDays || 'undefined'} days</p>
+                </div>
+                <div>
+                    <p class="text-sm text-light-textSecondary dark:text-dark-textSecondary">Total Owing</p>
+                    <p class="font-semibold ${totalOwing >= 0 ? 'text-accent-green' : 'text-accent-red'}">
+                        $${Math.abs(totalOwing).toFixed(2)}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-sm text-light-textSecondary dark:text-dark-textSecondary">Status</p>
+                    <p class="font-semibold ${remainingDays > 0 ? 'text-accent-green' : 'text-accent-red'}">
+                        ${remainingDays > 0 ? 'Active' : 'Expired'}
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex space-x-4 mb-4">
+                <button onclick="openTransactionModal('${period.id}', 'expense')" class="h-10 px-4 rounded-xl bg-primary text-white font-medium flex items-center justify-center transition-all hover:scale-105 ease-in-out">
+                    Add Transaction
+                </button>
+                <button onclick="openTransactionModal('${period.id}', 'repayment')" class="h-10 px-4 rounded-xl bg-ui-input dark:bg-dark-card text-light-text dark:text-dark-text font-medium flex items-center justify-center transition-all hover:bg-gray-100 dark:hover:bg-dark-surface ease-in-out">
+                    Add Repayment
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-light-surface/50 dark:bg-dark-surface/50">
+                            <th class="p-2 text-left">DATE</th>
+                            <th class="p-2 text-left">DESCRIPTION</th>
+                            <th class="p-2 text-right">AMOUNT</th>
+                            <th class="p-2 text-right">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${renderTransactions(period.transactions)}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        container.appendChild(periodElement);
+    });
+}
+
 // Add a new bill to the master list
 function addBill() {
     let name = document.getElementById("billName").value;
@@ -642,7 +868,15 @@ function addBill() {
     
     if (name && amount && date && frequency && group) {
         // For custom frequency, save the settings with the bill
-        let billData = { name, amount, date, frequency, group };
+        let billData = { 
+            name, 
+            amount, 
+            date, 
+            frequency, 
+            group,
+            id: `bill-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Add unique ID
+            paid: false // Initialize as unpaid
+        };
         
         if (frequency === 'Custom' && customFrequencySettings) {
             billData.customFrequency = customFrequencySettings;
@@ -812,6 +1046,10 @@ function saveEditBill() {
         customFrequency = masterBills[index].customFrequency;
     }
     
+    // Keep the original ID and paid status
+    const originalId = masterBills[index].id;
+    const isPaid = masterBills[index].paid || false;
+    
     // Update the bill
     masterBills[index] = {
         name,
@@ -819,6 +1057,8 @@ function saveEditBill() {
         date,
         frequency,
         group,
+        id: originalId,
+        paid: isPaid,
         dateCategory: determineDateCategory(date)
     };
     
@@ -900,7 +1140,7 @@ function generatePayCycles() {
         let cycleBills = [];
         
         // Process each bill
-        masterBills.forEach(bill => {
+        masterBills.forEach((bill, billIndex) => {
             // Ensure the bill has a category
             const categorizedBill = categorizeBill(bill);
             
@@ -946,12 +1186,17 @@ function generatePayCycles() {
             // After finding the right occurrence for this cycle, check if it falls within the cycle
             // Use inclusive comparison for both start and end dates
             if (isDateInRange(currentBillDate, cycleStart, cycleEnd)) {
+                // Create a unique ID for this bill in this cycle if it doesn't already have one
+                const billId = categorizedBill.id || `bill-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                
                 // Convert to a format safe for storage with consistent timezone handling
                 const formattedDate = formatDateForStorage(currentBillDate);
                 
                 cycleBills.push({
                     ...categorizedBill,
                     date: formattedDate,
+                    id: billId,
+                    paid: categorizedBill.paid || false,
                     // Store original day for debugging
                     _originalDay: originalBillDate.getDate()
                 });
@@ -969,10 +1214,15 @@ function generatePayCycles() {
                 while (nextDate && isDateInRange(nextDate, cycleStart, cycleEnd)) {
                     const formattedNextDate = formatDateForStorage(nextDate);
                     
+                    // Create a unique ID for this recurring bill instance
+                    const recurrenceBillId = `${categorizedBill.id || 'bill'}-recurrence-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+                    
                     // Add this occurrence to the cycle
                     cycleBills.push({
                         ...categorizedBill,
                         date: formattedNextDate,
+                        id: recurrenceBillId,
+                        paid: false, // New recurrences start as unpaid
                         _originalDay: originalBillDate.getDate()
                     });
                     
@@ -1395,7 +1645,13 @@ function updatePayCycles() {
             
             groupedBills[group].forEach(bill => {
                 let li = document.createElement("li");
-                li.className = "flex justify-between items-center py-3 px-4 rounded-lg bg-light-surface dark:bg-dark-surface hover:bg-ui-input dark:hover:bg-dark-card transition-colors";
+                li.className = "flex justify-between items-center py-3 px-4 rounded-lg bg-light-surface dark:bg-dark-surface hover:bg-ui-input dark:hover:bg-dark-card transition-colors cursor-pointer bill-item";
+                
+                // Add data attribute for bill ID and mark as paid if needed
+                li.dataset.billId = bill.id || `cycle-${index}-bill-${bill.name}-${bill.date}`;
+                if (bill.paid) {
+                    li.classList.add('bill-paid');
+                }
                 
                 const billDate = new Date(bill.date + 'T12:00:00Z');
                 
@@ -1406,6 +1662,15 @@ function updatePayCycles() {
                     </span>
                     <span class="text-right font-semibold font-mono whitespace-nowrap pl-4 min-w-[120px]">${bill.amount.toFixed(2)}</span>
                 `;
+                
+                // Add click handler to toggle paid status
+                li.addEventListener('click', function(e) {
+                    // Only toggle if not clicking on a button
+                    if (!e.target.closest('button')) {
+                        toggleBillPaid(this.dataset.billId);
+                    }
+                });
+                
                 ul.appendChild(li);
             });
             
@@ -1495,13 +1760,22 @@ window.onload = function() {
         }
     });
 
+    // In your initialization function
+    const savedCycles = localStorage.getItem('payCycleData');
+    if (savedCycles) {
+        payCycles = JSON.parse(savedCycles);
+        updatePayCycles(); // Just update the UI, don't regenerate
+    } else {
+        generatePayCycles(); // Generate new cycles if none are saved
+    }
+
     // Set up edit bill frequency change
     document.getElementById('editBillFrequency').addEventListener('change', function() {
         if (this.value === 'Custom') {
             document.getElementById('customFrequencyModal').style.display = 'flex';
         }
     });
-    
+
     // Set up group management event listeners
     document.getElementById('addGroupBtn').addEventListener('click', function() {
         openGroupEditModal();
